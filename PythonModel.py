@@ -25,6 +25,10 @@ class PythonModel(QAbstractListModel):
         return len(self.items)
 
     def data(self, index, role=0):
+        print "data is called"
+        print len(self.items)
+        print index.row()
+        print role
         if self.items is None or self.roleDict is None :
             return None
         if len(self.roleDict) == 1 :

@@ -2,13 +2,15 @@ import Qt 4.7
  
 
 Rectangle {
-    width: 200
-    height: 400
+    width: 800
+    height: 600
 
+
+/*
      Component {
          id: nameDelegate
          Text {
-             text: name + " " + num
+             text: section + "=" + value
              font.pixelSize: 24
              anchors.left: parent.left
              anchors.leftMargin: 2
@@ -26,6 +28,13 @@ Rectangle {
          }
 
      }
+*/
+    GitFileBrowser{ id: gfb
 
+    }
+
+    BlameView { id: bv
+        anchors.left: gfb.right
+    }
 }
 
