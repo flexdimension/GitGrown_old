@@ -6,6 +6,9 @@ Created on 2011/12/04
 
 from git import *
 from PythonModel import PythonModel
+from DictListModel import DictListModel
+
+import time
 
 class GitModel() :
     def __init__(self):
@@ -36,6 +39,9 @@ class GitModel() :
     def getConfigRoles(self):
         return ['section', 'value']
     
+    def getConfigModel(self):
+        return PythonModel(self.getConfigItems(), self.getConfigRoles())
+    
     def getFileList(self):
         tree = self.repo.head.commit.tree
         rslt = []
@@ -52,7 +58,10 @@ class GitModel() :
         
         return rslt
     
-    def getBlamedModel(self, path):
+    def getFileListModel(self):
+        return DictListModel(self.getFileList())
+    
+    def getBlamed(self, path):
         data = self.repo.git.blame("HEAD", path)
         
         rslt = []
@@ -77,6 +86,28 @@ class GitModel() :
         
     def getBlamedRoles(self):
         return ['commit', 'user', 'data', 'time', 'permission', 'num', 'code']
+
+    def getBlamedModel(self, path):
+        return PythonModel(self.getBlamed(path), self.getBlamedRoles())
+    
+    def getCommitList(self, path):
+        rslt = []
+        
+        for c in self.repo.iter_commits('HEAD', max_count = 100) :
+            for b in c.tree.traverse() :
+                print "path:" + b.path
+                if b.path == path :
+                    rslt.append([c.hexsha, c.author.name, \
+                        time.asctime(time.gmtime(c.authored_date))])
+        print rslt
+        return rslt
+    
+    def getCommitRoles(self):
+        return ['hexsha', 'author_name', 'authored_date']
+    
+    def getCommitListModel(self, path):
+        return PythonModel(self.getCommitList(path), self.getCommitRoles())
+        
         
             
 if __name__ == '__main__' :

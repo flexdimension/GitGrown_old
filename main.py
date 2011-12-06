@@ -20,18 +20,22 @@ view = QDeclarativeView()
 
 gm = GitModel()
 gm.connect('/Users/unseon_pro/myworks/RoughSketchpad')
-model = PythonModel(gm.getConfigItems(), gm.getConfigRoles())
-fileListModel = DictListModel(gm.getFileList())
+
+configModel = gm.getConfigModel()
+
+fileListModel = gm.getFileListModel()
 
 filePath = 'src/com/criticalmass/roughsketchpad/app/RsCanvas.py'
-fileViewModel = PythonModel(gm.getBlamedModel(filePath),\
-                            gm.getBlamedRoles())
+fileViewModel = gm.getBlamedModel(filePath)
+commitListModel = gm.getCommitListModel(filePath)
+
 # Create an URL to the QML file
 url = QUrl('view.qml')
 # Set the QML file and show
-view.rootContext().setContextProperty('model2', model)
+view.rootContext().setContextProperty('config', configModel)
 view.rootContext().setContextProperty('fileListModel', fileListModel)
 view.rootContext().setContextProperty('fileViewModel', fileViewModel)
+view.rootContext().setContextProperty('commitListModel', commitListModel)
 
 
 view.setSource(url)

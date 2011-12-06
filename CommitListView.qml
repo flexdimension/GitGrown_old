@@ -2,50 +2,50 @@ import Qt 4.7
 
 Rectangle {
     width:600
-    height:400
+    height:200
 
-    color: "#DDDDDD"
+    color: "#AADDDD"
 
     Rectangle {
         anchors.fill: parent
         anchors.margins: 10
         clip: true
 
-        Component { id: fileViewDelegate
+        Component { id: commitListDelegate
             Rectangle {
                 width: parent.width
-                height: codeText.height
+                height: hexshaBox.height
                 border.width: 1
                 border.color: "#EEEEEE"
                 color: "#DDDDDD"
 
-                Rectangle { id: commitBox
+                Rectangle { id: hexshaBox
                     anchors.left:parent.left
                     anchors.leftMargin:5
-                    width: 60
-                    height: commitText.height
+                    width: 250
+                    height: hexshaText.height
                     radius: 4
                     border.width: 1
                     border.color: "#FFEEEE"
                     color: "#FFEEEE"
 
-                    Text { id: commitText
+                    Text { id: hexshaText
                         anchors.left:parent.left
                         anchors.leftMargin:5
-                        text: commit
+                        text: hexsha
                         font.pixelSize: 10
                         font.family:"Courier"
                     }
                 }
 
-                Rectangle { id: codeBox
-                    anchors.left:commitBox.right
+                Rectangle { id: authoredDateBox
+                    anchors.left:hexshaBox.right
                     anchors.leftMargin:10
                     anchors.right: parent.right
-                    height: codeText.height
+                    height: authoredDateText.height
 
-                    Text { id: codeText
-                        text: num + ") " + code
+                    Text { id: authoredDateText
+                        text: author_name + " " + authored_date
                         font.pixelSize: 10
                         font.family:"Courier"
                     }
@@ -55,8 +55,8 @@ Rectangle {
 
         ListView {
             anchors.fill: parent
-            model: fileViewModel
-            delegate: fileViewDelegate
+            model: commitListModel
+            delegate: commitListDelegate
         }
     }
 }

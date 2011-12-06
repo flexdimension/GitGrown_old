@@ -36,5 +36,10 @@ Rectangle {
     BlameView { id: bv
         anchors.left: gfb.right
     }
+
+    CommitListView { id: clv
+        anchors.left:bv.left
+        anchors.top:bv.bottom
+    }
 }
 
