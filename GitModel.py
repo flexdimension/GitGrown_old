@@ -68,9 +68,7 @@ class GitModel() :
         
         for line in data.splitlines() :
             commit, rest = line.split(' (')
-            print rest
             info = rest.split(') ')
-            print info
             infos = info[0].split(' ', 4)
             infos[4] = int(infos[4])
             
@@ -95,7 +93,7 @@ class GitModel() :
         
         for c in self.repo.iter_commits('HEAD', max_count = 100) :
             for b in c.tree.traverse() :
-                print "path:" + b.path
+                #print "path:" + b.path
                 if b.path == path :
                     rslt.append([c.hexsha, c.author.name, \
                         time.asctime(time.gmtime(c.authored_date))])
