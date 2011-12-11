@@ -53,10 +53,23 @@ Rectangle {
             }
         }
 
-        ListView {
+        ListView { id: listView
             anchors.fill: parent
             model: fileViewModel
             delegate: fileViewDelegate
+
+            Rectangle {
+                width: empty.width
+                height: empty.height
+                color: "#AAAAAA"
+                visible: listView.count == 0 && listView.model != null
+
+                Text { id: empty
+                    text: "(empty)"
+                    font.pixelSize: 10
+                    font.family:"Courier"
+                }
+            }
         }
     }
 }

@@ -8,7 +8,7 @@ from PySide.QtCore import *
 from PySide.QtGui import QMainWindow, QVBoxLayout, QColor
 
 from PySide.QtDeclarative import QDeclarativeView
-from PythonModel import PythonModel
+from PyListModel import PyListModel
 from DictListModel import DictListModel
 from GitModel import GitModel
 
@@ -17,8 +17,32 @@ class GitPysideFrame(QMainWindow):
     classdocs
     '''
 
+    @Slot(int)
+    def onSelectedPathChanged(self, index) :
+        print "onSelectedPathChanged is called"
+        filePath = self.fileListModel.selectedValue
+        obj = self.gm.getFileList()[index]
+        
+        if obj['type'] == 'blob' :
+            self.fileViewModel = self.gm.getBlamedModel('HEAD', filePath)
+            self.commitListModel = self.gm.getCommitListModel(filePath)
+        elif obj['type'] ==  'tree':
+            self.fileViewModel = None
+            self.commitListModel = self.gm.getCommitListModel(filePath, 'dir')
+        else :
+            pass #error!!!!!
+            
+        rootContect = self.view.rootContext()
+        rootContect.setContextProperty('fileViewModel', self.fileViewModel)
+        rootContect.setContextProperty('commitListModel', self.commitListModel)
+    
+    def onSelecteCommitChanged(self, index):
+        print "onSelectedCommitChanged is called"
+        sha = self.commitListModel.selectedValue
+        
+        
 
-    def __init__(self, parent = None):
+    def __init__(self, parent = None) :
         '''
         Constructor
         '''
@@ -32,24 +56,28 @@ class GitPysideFrame(QMainWindow):
         self.setLayout(layout)
         
         self.gm = GitModel()
-        self.gm.connect('/Users/unseon_pro/myworks/RoughSketchpad')
+        #self.gm.connect('/Users/unseon_pro/myworks/RoughSketchpad')
+        self.gm.connect('.')
         
         self.configModel = self.gm.getConfigModel()
         
         self.fileListModel = self.gm.getFileListModel()
+        self.fileListModel.selectionChanged.connect(self.onSelectedPathChanged)
         
-        filePath = 'src/com/criticalmass/roughsketchpad/app/RsCanvas.py'
-        self.fileViewModel = self.gm.getBlamedModel(filePath)
-        self.commitListModel = self.gm.getCommitListModel(filePath)
+        self.fileViewModel = None
+        self.commitListModel = self.gm.getCommitListModel('', 'tree')
         
         # Create an URL to the QML file
         url = QUrl('view.qml')
         # Set the QML file and show
-        self.view.rootContext().setContextProperty('config', self.configModel)
-        self.view.rootContext().setContextProperty('fileListModel', self.fileListModel)
-        self.view.rootContext().setContextProperty('fileViewModel', self.fileViewModel)
-        self.view.rootContext().setContextProperty('commitListModel', self.commitListModel)
-        self.view.setResizeMode(QDeclarativeView.SizeRootObjectToView)
+        
+        rootContect = self.view.rootContext()
+        #rootContect.setContextProperty('rootFrame', self)
+        rootContect.setContextProperty('config', self.configModel)
+        rootContect.setContextProperty('fileListModel', self.fileListModel)
+        rootContect.setContextProperty('fileViewModel', self.fileViewModel)
+        rootContect.setContextProperty('commitListModel', self.commitListModel)
+        #self.view.setResizeMode(QDeclarativeView.SizeRootObjectToView)
 
         
         self.view.setSource(url)
@@ -59,5 +87,8 @@ class GitPysideFrame(QMainWindow):
         self.fileBrowser = root.findChild(QObject, "fileBrowser")
         self.blameView = root.findChild(QObject, "blameView")
         self.commitListView = root.findChild(QObject, "commitListView")
+        
+        self.selectedPath = '.'
+        self.selectedCommit = None
 
         

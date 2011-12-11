@@ -13,7 +13,7 @@ Rectangle {
 
         Component { id: commitListDelegate
             Rectangle {
-                width: parent.width
+                width: parent.width -20
                 height: hexshaBox.height
                 border.width: 1
                 border.color: "#EEEEEE"
@@ -50,13 +50,26 @@ Rectangle {
                         font.family:"Courier"
                     }
                 }
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked : {
+                        commitListModel.onSelected("hexsha", hexsha)
+                        listView.currentIndex = index
+                    }
+                }
             }
         }
 
-        ListView {
+        ListView { id: listView
             anchors.fill: parent
             model: commitListModel
             delegate: commitListDelegate
+            highlight: Rectangle {
+                    color: "lightblue"
+                    height: listView.currentItem.height
+                    width: listView.width
+                }
         }
     }
 }

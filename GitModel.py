@@ -5,7 +5,7 @@ Created on 2011/12/04
 '''
 
 from git import *
-from PythonModel import PythonModel
+from PyListModel import PyListModel
 from DictListModel import DictListModel
 
 import time
@@ -40,35 +40,47 @@ class GitModel() :
         return ['section', 'value']
     
     def getConfigModel(self):
-        return PythonModel(self.getConfigItems(), self.getConfigRoles())
+        return PyListModel(self.getConfigItems(), self.getConfigRoles())
     
     def getFileList(self):
         tree = self.repo.head.commit.tree
         rslt = []
+        
+        info = dict()
+        info['name'] = "<" + tree.abspath.split('/')[-1] + ">"
+        info['path'] = tree.path
+        info['type'] = tree.type
+        rslt.append(info)
+        
         for obj in tree.traverse() :
             info = dict()
             info['name'] = obj.name
             info['path'] = obj.path
-            if isinstance(obj, Tree) :
-                info['type'] = "dir"
-            else :
-                info['type'] = "file"
+            #if isinstance(obj, Tree) :
+            #    info['type'] = "dir"
+            #else :
+            #    info['type'] = "file"
+                
+            info['type'] = obj.type
             rslt.append(info)
         rslt = sorted(rslt, key = lambda t:t['path'])
         
         return rslt
     
+    def getCommitInfo(self, hexsha):
+        return None
+    
     def getFileListModel(self):
         return DictListModel(self.getFileList())
     
-    def getBlamed(self, path):
-        data = self.repo.git.blame("HEAD", path)
+    def getBlamed(self, path, commit):
+        data = self.repo.git.blame(commit, path)
         
         rslt = []
         
         for line in data.splitlines() :
-            commit, rest = line.split(' (')
-            info = rest.split(') ')
+            commit, rest = line.split(' (', 1)
+            info = rest.split(') ', 1)
             infos = info[0].split(' ', 4)
             infos[4] = int(infos[4])
             
@@ -85,26 +97,33 @@ class GitModel() :
     def getBlamedRoles(self):
         return ['commit', 'user', 'data', 'time', 'permission', 'num', 'code']
 
-    def getBlamedModel(self, path):
-        return PythonModel(self.getBlamed(path), self.getBlamedRoles())
-    
-    def getCommitList(self, path):
+    def getBlamedModel(self, path, commit = 'HEAD'):
+        return PyListModel(self.getBlamed(path, commit), self.getBlamedRoles())
+
+    def getCommitList(self, path, type = 'blob'):
         rslt = []
         
+        if path == '' : #get all commit list if path is top
+            for c in self.repo.iter_commits('HEAD', max_count = 100) :
+                rslt.append([c.hexsha, c.author.name, \
+                    time.asctime(time.gmtime(c.authored_date))])
+            return rslt
+        
         for c in self.repo.iter_commits('HEAD', max_count = 100) :
-            for b in c.tree.traverse() :
+            for k in c.stats.files.keys() :
                 #print "path:" + b.path
-                if b.path == path :
+                if k == path or (type == 'tree' and path in k) :
                     rslt.append([c.hexsha, c.author.name, \
                         time.asctime(time.gmtime(c.authored_date))])
-        print rslt
+                    break
+        #print rslt
         return rslt
     
     def getCommitRoles(self):
         return ['hexsha', 'author_name', 'authored_date']
     
-    def getCommitListModel(self, path):
-        return PythonModel(self.getCommitList(path), self.getCommitRoles())
+    def getCommitListModel(self, path, type = 'blob'):
+        return PyListModel(self.getCommitList(path, type), self.getCommitRoles())
         
         
             
