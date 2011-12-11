@@ -6,6 +6,8 @@ Rectangle {
 
     color: "#AADDDD"
 
+    property alias currentIndex: listView.currentIndex
+
     Rectangle {
         anchors.fill: parent
         anchors.margins: 10

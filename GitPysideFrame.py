@@ -35,10 +35,21 @@ class GitPysideFrame(QMainWindow):
         rootContect = self.view.rootContext()
         rootContect.setContextProperty('fileViewModel', self.fileViewModel)
         rootContect.setContextProperty('commitListModel', self.commitListModel)
-    
-    def onSelecteCommitChanged(self, index):
+        self.commitListModel.selectionChanged.connect(self.onSelectedCommitChanged)
+        self.commitListView.setProperty('currentIndex', 0)
+
+    @Slot(int)
+    def onSelectedCommitChanged(self, index):
         print "onSelectedCommitChanged is called"
         sha = self.commitListModel.selectedValue
+        filePath = self.fileListModel.selectedValue
+        fileIndex = self.fileListModel.selectedIndex
+        obj = self.gm.getFileList()[fileIndex]
+        if obj['type'] == 'blob' :
+            self.fileViewModel = self.gm.getBlamedModel(sha, filePath)
+            rootContect = self.view.rootContext()
+            rootContect.setContextProperty('fileViewModel', self.fileViewModel)
+            print "blame model is changed"
         
         
 
@@ -66,6 +77,7 @@ class GitPysideFrame(QMainWindow):
         
         self.fileViewModel = None
         self.commitListModel = self.gm.getCommitListModel('', 'tree')
+        self.commitListModel.selectionChanged.connect(self.onSelectedCommitChanged)
         
         # Create an URL to the QML file
         url = QUrl('view.qml')
