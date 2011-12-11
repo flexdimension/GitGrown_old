@@ -10,7 +10,7 @@ from GitPysideFrame import GitPysideFrame
 # Create Qt application and the QDeclarative view
 app = QApplication(sys.argv)
 view = GitPysideFrame()
-view.resize(800, 600)
+view.resize(1000, 600)
 
 
 view.show()
