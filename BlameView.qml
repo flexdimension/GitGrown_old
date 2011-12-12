@@ -1,10 +1,12 @@
 import Qt 4.7
 
-Rectangle {
-    width:600
+Rectangle { id: blameView
+    width:400
     height:400
 
     color: "#DDDDDD"
+
+    property string currentCommit: ""
 
     Rectangle {
         anchors.fill: parent
@@ -12,12 +14,14 @@ Rectangle {
         clip: true
 
         Component { id: fileViewDelegate
-            Rectangle {
+
+            Rectangle { id: lineBox
                 width: parent.width
                 height: codeText.height
                 border.width: 1
                 border.color: "#EEEEEE"
                 color: "#DDDDDD"
+                property bool isCurrent: blameView.currentCommit.substr(0, 8) == commit
 
                 Rectangle { id: commitBox
                     anchors.left:parent.left
@@ -27,7 +31,7 @@ Rectangle {
                     radius: 4
                     border.width: 1
                     border.color: "#FFEEEE"
-                    color: "#FFEEEE"
+                    color: lineBox.isCurrent ? "#88FF88" : "#FFEEEE"
 
                     Text { id: commitText
                         anchors.left:parent.left
@@ -43,6 +47,7 @@ Rectangle {
                     anchors.leftMargin:10
                     anchors.right: parent.right
                     height: codeText.height
+                    color: lineBox.isCurrent ? "#DDFFDD" : "white"
 
                     Text { id: codeText
                         text: num + ") " + code

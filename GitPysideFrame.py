@@ -37,6 +37,10 @@ class GitPysideFrame(QMainWindow):
         rootContect.setContextProperty('commitListModel', self.commitListModel)
         self.commitListModel.selectionChanged.connect(self.onSelectedCommitChanged)
         self.commitListView.setProperty('currentIndex', 0)
+        
+        if obj['type'] == 'blob' :
+            print "currentCommit is " + self.commitListModel.items[0][0]
+            self.blameView.setProperty('currentCommit', self.commitListModel.items[0][0])
 
     @Slot(int)
     def onSelectedCommitChanged(self, index):
@@ -49,6 +53,7 @@ class GitPysideFrame(QMainWindow):
             self.fileViewModel = self.gm.getBlamedModel(sha, filePath)
             rootContect = self.view.rootContext()
             rootContect.setContextProperty('fileViewModel', self.fileViewModel)
+            self.blameView.setProperty('currentCommit', sha)
             print "blame model is changed"
         
         

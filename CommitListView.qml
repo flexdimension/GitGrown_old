@@ -1,7 +1,7 @@
 import Qt 4.7
 
 Rectangle {
-    width:600
+    width:400
     height:200
 
     color: "#AADDDD"
