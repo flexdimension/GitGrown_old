@@ -124,6 +124,20 @@ class GitModel() :
     
     def getCommitListModel(self, path, type = 'blob'):
         return PyListModel(self.getCommitList(path, type), self.getCommitRoles())
+    
+    def getBranchInfos(self):
+        bi = []
+        for b in self.repo.heads :
+            name = b.name
+            for c in self.repo.iter_commits(name) :
+                date = c.authored_date
+                sha = c.hexsha
+                parents = []
+                for p in c.parents :
+                    parents.append(p.hexsha)
+                bi.append([name, date, sha, parents])
+                
+        return bi
         
         
             
