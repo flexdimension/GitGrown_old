@@ -20,6 +20,7 @@ if __name__ == '__main__':
             parents = []
             for p in c.parents :
                 parents.append(p.hexsha)
+                
             bi[sha] = [cnt, name, date, sha, parents]
         cnt += 1
             
