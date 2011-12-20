@@ -13,7 +13,7 @@ Rectangle {
         anchors.margins: 10
         clip: true
 
-        Component { id: commitListDelegate
+        Component { id: commitDelegate
             Rectangle {
                 width: parent.width -20
                 height: hexshaBox.height
@@ -34,7 +34,7 @@ Rectangle {
                     Text { id: hexshaText
                         anchors.left:parent.left
                         anchors.leftMargin:5
-                        text: hexsha
+                        text: branches
                         font.pixelSize: 10
                         font.family:"Courier"
                     }
@@ -47,7 +47,7 @@ Rectangle {
                     height: authoredDateText.height
 
                     Text { id: authoredDateText
-                        text: author_name + " " + authored_date
+                        text: offset
                         font.pixelSize: 10
                         font.family:"Courier"
                     }
@@ -65,8 +65,8 @@ Rectangle {
 
         ListView { id: listView
             anchors.fill: parent
-            model: commitListModel
-            delegate: commitListDelegate
+            model: branchGraphModel
+            delegate: commitDelegate
             highlight: Rectangle {
                     color: "lightblue"
                     height: listView.currentItem.height

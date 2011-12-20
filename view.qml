@@ -12,13 +12,21 @@ Rectangle {
 
     BlameView { id: bv
         objectName: "blameView"
-        anchors.left: gfb.right
+        anchors.left: clv.right
     }
 
     CommitListView { id: clv
         objectName: "commitListView"
-        anchors.left:bv.left
-        anchors.top:bv.bottom
+        anchors.left:gfb.right
+        anchors.top:parent.top
+    }
+
+    BranchView { id: bgv
+        objectName: "branchView"
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top:gfb.bottom
+        anchors.bottom: parent.bottom
     }
 }
 

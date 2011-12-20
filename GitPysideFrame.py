@@ -84,6 +84,8 @@ class GitPysideFrame(QMainWindow):
         self.commitListModel = self.gm.getCommitListModel('', 'tree')
         self.commitListModel.selectionChanged.connect(self.onSelectedCommitChanged)
         
+        self.branchGraphModel = self.gm.getBranchGraphs()
+        
         # Create an URL to the QML file
         url = QUrl('view.qml')
         # Set the QML file and show
@@ -94,6 +96,7 @@ class GitPysideFrame(QMainWindow):
         rootContect.setContextProperty('fileListModel', self.fileListModel)
         rootContect.setContextProperty('fileViewModel', self.fileViewModel)
         rootContect.setContextProperty('commitListModel', self.commitListModel)
+        rootContect.setContextProperty('branchGraphModel', self.branchGraphModel)
         #self.view.setResizeMode(QDeclarativeView.SizeRootObjectToView)
 
         

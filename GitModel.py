@@ -138,6 +138,41 @@ class GitModel() :
                 bi.append([name, date, sha, parents])
                 
         return bi
+    
+    def getBranchGraphs(self):
+        commits = dict()
+        
+        for c in self.repo.iter_commits() :
+            parents = []
+            for p in c.parents :
+                parents.append(p.hexsha)
+            commits[c.hexsha] = [c.authored_date, parents, [], -1]
+        
+        cnt = 0    
+        for b in self.repo.heads :
+            name = b.name
+            for c in self.repo.iter_commits(name) :
+                commits[c.hexsha][2].append(name)
+                commits[c.hexsha][3] = cnt
+            cnt += 1
+                
+        rslt = []
+        
+        for c in commits.keys() :
+            d = dict()
+            d['hexsha'] = c
+            d['authored_date'] = commits[c][0]
+            l = lambda x, y : x + ' ' + y
+            d['parents'] = reduce(l, commits[c][1], '')[1:]
+            d['branches'] = reduce(l, commits[c][2], '')[1:]
+            d['offset'] = str(commits[c][3])
+            rslt.append(d)
+            
+        print rslt[0]
+        
+        rslt = sorted(rslt, key = lambda x : x['authored_date'])
+                
+        return DictListModel(rslt)
         
         
             
