@@ -14,44 +14,51 @@ Rectangle {
         clip: true
 
         Component { id: commitDelegate
-            Rectangle {
-                width: parent.width -20
-                height: hexshaBox.height
+            Rectangle { id: commitRect
+                width: 50
+                height: 200
                 border.width: 1
                 border.color: "#EEEEEE"
                 color: "#DDDDDD"
 
-                Rectangle { id: hexshaBox
-                    anchors.left:parent.left
-                    anchors.leftMargin:5
-                    width: 250
-                    height: hexshaText.height
-                    radius: 4
-                    border.width: 1
-                    border.color: "#FFEEEE"
-                    color: "#FFEEEE"
-
-                    Text { id: hexshaText
-                        anchors.left:parent.left
-                        anchors.leftMargin:5
-                        text: branches
-                        font.pixelSize: 10
-                        font.family:"Courier"
-                    }
-                }
-
-                Rectangle { id: authoredDateBox
-                    anchors.left:hexshaBox.right
-                    anchors.leftMargin:10
-                    anchors.right: parent.right
-                    height: authoredDateText.height
+                Rectangle { id: commitObj
+                    y: parseInt(offset) * 30
+                    height: 30
+                    width: 30
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    color: "#DDDD60"
+                    radius: 10
 
                     Text { id: authoredDateText
                         text: offset
                         font.pixelSize: 10
                         font.family:"Courier"
                     }
+
+
+                    /*
+                    Image {
+                        source: "images/line.svg"
+                        anchors.right: commitObj.horizontalCenter
+                        anchors.verticalCenter: commitObj.verticalCenter
+                        height: 5
+                        width: commitRect.width
+                    }
+                    */
+
+
+                    ImageLine {
+                        x : parent.width / 2
+                        y : parent.height / 2
+
+                        x2 : -50
+                        y2 : parent.height / 2 + 50
+                    }
+
+
                 }
+
+
 
                 MouseArea {
                     anchors.fill: parent
@@ -67,11 +74,16 @@ Rectangle {
             anchors.fill: parent
             model: branchGraphModel
             delegate: commitDelegate
+            orientation: ListView.Horizontal
+            //layoutDirection:Qt.RightToLeft
+
+            //layoutDirection: Qt.RightToLeft
             highlight: Rectangle {
                     color: "lightblue"
                     height: listView.currentItem.height
                     width: listView.width
                 }
+            Component.onCompleted: listView.positionViewAtEnd()
         }
     }
 }
