@@ -139,6 +139,56 @@ class GitModel() :
                 
         return bi
     
+    #return DictListModel
+    # 
+    def getBranchGraphs2(self):
+        """ return DictListModel of commits for constructing branch graph
+        
+        keys on a commit dict:
+        hexsha
+        authored_date 
+        parents
+        branches
+        offset
+        name_rev
+        heads
+        merge
+        """
+        
+        commitList = list(self.repo.iter_commits())
+        
+        #Firstly we need dict structure having top-down graph.
+        #It is difficult to trace parent-child relation on original git commit
+        #structure based on bottom-up 
+        #keys is parent, value is children
+        childrenDict = dict()
+        
+        for ic in commitList:
+            for ip in ic.iter_parents():
+                if ip in childrenDict.keys():
+                    childrenDict[ip].append(ic)
+                else :
+                    childrenDict[ip] = [ic]
+
+        self.childrenDict = childrenDict
+        
+        #offsetDict key:commit value:offset            
+        self.offsetDict = dict()
+        self.calcOffset(0, commitList.reverse()[0])
+        
+    def calcOffset(self, offset, cm):
+        if cm in self.offsetDict :
+            return offset - 1
+
+        self.offsetDict[cm] = offset
+        for ic in self.childrenDict :
+            offset = self.calcOffset(offset, ic)
+            offset += 1
+            
+        return offset
+        
+                
+    
     def getBranchGraphs(self):
         
         branchDict = dict()
@@ -147,6 +197,9 @@ class GitModel() :
         for b in self.repo.heads :
             branchDict[b.name] = cnt
             cnt += 1
+        #master is always 0
+        #if 'master' in branchDict.keys() :
+            
         
             
         #mergeMap
@@ -184,7 +237,7 @@ class GitModel() :
             
             for c in self.repo.iter_commits(name) :
                 commits[c.hexsha][2].append(name)
-
+        """
         #recalc offset : very very heavy
         for main in mergeMap.keys() :
             main_commit = self.repo.commit(main)
@@ -194,7 +247,7 @@ class GitModel() :
                     if ic in main_commit.iter_parents() :
                         print ic.hexsha, commits[ic.hexsha][3], branchDict[main]
                         commits[ic.hexsha][3] = branchDict[main]
-                        
+       """                 
 
                 
         rslt = []
@@ -213,7 +266,7 @@ class GitModel() :
             d['merge'] = merge
             rslt.append(d)
             
-        
+            
         rslt = sorted(rslt, key = lambda x : x['authored_date'])
 
         #for r in rslt : print r
