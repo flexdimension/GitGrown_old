@@ -176,8 +176,8 @@ class GitModel() :
                     'authored_date': ic.authored_date,
                     'offset': self.offsetDict[ic],
                     'summary': ic.summary,
-                    'idx_parent0': None,
-                    'idx_parent1': None
+                    'idx_parent0': '',
+                    'idx_parent1': ''
                     }
             
             cnt = 0
@@ -250,96 +250,7 @@ class GitModel() :
             if ic == end:
                 break
             
-        return maxOffset
-                
-    
-    def getBranchGraphs_backup(self):
-        
-        branchDict = dict()
-
-        #master is always 0
-        cnt = 0
-        if 'master' in [b.name for b in self.repo.heads]:
-            branchDict['master'] = 0
-            cnt = 1
-        for b in self.repo.heads :
-            if 'master' == b.name:
-                continue
-            branchDict[b.name] = cnt
-            cnt += 1            
-        
-            
-        #mergeMap
-        # [main branch name, [list of child branches (name, commit)]]    
-        mergeMap = dict()            
-        commits = dict()
-        for c in self.repo.iter_commits() :
-            name_rev = c.name_rev.split(' ')[1].split('/')[-1]
-            print 'name_rev ' + c.name_rev
-            branchName = name_rev.split('~')[0]
-            #offset = branchDict[branchName]
-            #offset = 0
-            
-            #parents to string list
-            l = lambda x, y : x + [y.hexsha]
-            parents = reduce(l, c.parents, [])
-        
-            merge = None
-            if len(parents) >= 1 and 'Merge branch' in c.summary:
-                merge = str(c.summary).split("'")[1]
-                if branchName in mergeMap.keys() :
-                    mergeMap[branchName].append(merge)
-                else :
-                    mergeMap[branchName] = [merge]
-                
-                
-            commits[c.hexsha] = [c.authored_date, parents, [], offset, name_rev, [], merge]
-        
-        for i in mergeMap.items() : print i
-        
-        #branch info
-        for b in self.repo.heads :
-            name = b.name
-            commits[b.commit.hexsha][5].append(name)
-            
-            for c in self.repo.iter_commits(name) :
-                commits[c.hexsha][2].append(name)
-        """
-        #recalc offset : very very heavy
-        for main in mergeMap.keys() :
-            main_commit = self.repo.commit(main)
-            for branch in mergeMap[main] :
-                branch_commit = self.repo.commit(branch)
-                for ic in branch_commit.iter_parents() :
-                    if ic in main_commit.iter_parents() :
-                        print ic.hexsha, commits[ic.hexsha][3], branchDict[main]
-                        commits[ic.hexsha][3] = branchDict[main]
-       """                 
-
-                
-        rslt = []
-        
-        for c in commits.keys() :
-            d = dict()
-            d['hexsha'] = c
-            d['authored_date'] = commits[c][0]
-            l = lambda x, y : x + ' ' + y
-            d['parents'] = reduce(l, commits[c][1], '')[1:]
-            d['branches'] = reduce(l, commits[c][2], '')[1:]
-            d['offset'] = str(commits[c][3])
-            d['name_rev'] = commits[c][4]
-            d['heads'] = reduce(l, commits[c][5], '')[1:]
-            merge = commits[c][6]
-            d['merge'] = merge
-            rslt.append(d)
-            
-            
-        rslt = sorted(rslt, key = lambda x : x['authored_date'])
-
-        for r in rslt : print r
-                        
-        return DictListModel(rslt)
-        
+        return maxOffset       
         
             
 if __name__ == '__main__' :

@@ -31,7 +31,7 @@ Rectangle {
                     radius: 10
 
                     Text { id: indexText
-                        text: index
+                        text: listView.count - index - 1
                         font.pixelSize: 10
                         font.family:"Courier"
                     }
@@ -45,7 +45,7 @@ Rectangle {
 
                     Text { id: hexshaText
                         anchors.top: parent.bottom
-                        text: hexsha.substring(0, 4)
+                        text: hexsha.substring(0, 4) + '\n' + idx_parent0 + '\n' + idx_parent1
                         font.pixelSize: 10
                         font.family:"Courier"
                     }
@@ -74,10 +74,12 @@ Rectangle {
 
 
                     ImageLine {
-                        x : parent.width / 2
+                        property int diffIdx: idx_parent0 - (listView.count - index - 1)
+
+                        x : 0
                         y : parent.height / 2
 
-                        x2 : -50
+                        x2 : -50 * diffIdx + 25
                         y2 : parent.height / 2
                     }
 
