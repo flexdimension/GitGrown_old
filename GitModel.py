@@ -52,7 +52,11 @@ class GitModel() :
         info['type'] = tree.type
         rslt.append(info)
         
+        print "tree traverse"
         for obj in tree.traverse() :
+            #not yet submodule is not carried
+            if obj.type == 'submodule' :
+                continue
             info = dict()
             info['name'] = obj.name
             info['path'] = obj.path
@@ -141,65 +145,128 @@ class GitModel() :
     
     #return DictListModel
     # 
-    def getBranchGraphs2(self):
+    def getBranchGraphs(self):
         """ return DictListModel of commits for constructing branch graph
         
         keys on a commit dict:
         hexsha
         authored_date 
-        parents
-        branches
+        /parents
+        /branches
         offset
-        name_rev
-        heads
-        merge
+        /name_rev
+        /heads
+        /merge
         """
-        
-        commitList = list(self.repo.iter_commits())
-        
-        #Firstly we need dict structure having top-down graph.
-        #It is difficult to trace parent-child relation on original git commit
-        #structure based on bottom-up 
-        #keys is parent, value is children
-        childrenDict = dict()
-        
-        for ic in commitList:
-            for ip in ic.iter_parents():
-                if ip in childrenDict.keys():
-                    childrenDict[ip].append(ic)
-                else :
-                    childrenDict[ip] = [ic]
 
-        self.childrenDict = childrenDict
+        self.commitsList = list(self.repo.iter_commits())
+        self.commitsList = sorted(self.commitsList, 
+                                  key = lambda x : x.authored_date,
+                                  reverse = True)
+                
+        #calculate offset for representing a graph
+        self.offsetDict = self.getOffsetDict()
         
-        #offsetDict key:commit value:offset            
-        self.offsetDict = dict()
-        self.calcOffset(0, commitList.reverse()[0])
+        rslt = []
         
-    def calcOffset(self, offset, cm):
-        if cm in self.offsetDict :
-            return offset - 1
 
-        self.offsetDict[cm] = offset
-        for ic in self.childrenDict :
-            offset = self.calcOffset(offset, ic)
-            offset += 1
+        
+        for ic in self.commitsList:
+            item = {'hexsha': ic.hexsha,
+                    'authored_date': ic.authored_date,
+                    'offset': self.offsetDict[ic],
+                    'summary': ic.summary,
+                    'idx_parent0': None,
+                    'idx_parent1': None
+                    }
             
-        return offset
+            cnt = 0
+            for p in ic.parents:
+                item['idx_parent'+str(cnt)] = self.commitsList.index(p)
+                cnt += 1
+                
+            rslt.append(item)
         
+        rslt = sorted(rslt, key = lambda x : x['authored_date'])
+        
+        #for i in rslt : print i
+        
+        return DictListModel(rslt)
+        
+        
+    def getOffsetDict(self):
+        offsetDict = dict()
+        maxOffsetDict = dict()
+        commitList = [self.repo.commit()]
+        offset = 0
+        
+        while len(commitList) > 0:
+            commit = commitList.pop(0)
+            ic = commit
+            while True:
+                if len(ic.parents) == 0:
+                    break
+                if ic.parents[0] in offsetDict.keys() :
+                    break
+                if len(ic.parents) == 2 :
+                    print 'push : ', ic.parents[1].hexsha
+                    commitList.append(ic.parents[1])
+                    
+                ic = ic.parents[0]
+                
+            endCommit = ic
+            maxOffset = self.getMaxOffset(commit, endCommit, maxOffsetDict)
+            #print 'maxOffset = ', maxOffset
+            maxOffset += 1
+            #update all iter_commit as maxOffset
+            beginIndex = self.commitsList.index(commit)
+            for icc in self.commitsList[beginIndex:]:
+                maxOffsetDict[icc] = maxOffset
+                if icc == ic:
+                    break
+            #update all iter_parent as offset
+            ic = commit
+            while True:
+                offsetDict[ic] = maxOffset
+                if ic == endCommit:
+                    break;
+                ic = ic.parents[0]
+                
+        #for i in self.commitsList: print i.hexsha, offsetDict[i]
+        
+        
+        
+        return offsetDict
+                
+
+    def getMaxOffset(self, begin, end, maxOffsetDict):
+        #if maxOffsetDict is not initialized, return offset 0
+        maxOffset = -1
+        beginIndex = self.commitsList.index(begin)
+        for ic in self.commitsList[beginIndex:]:
+            if ic in maxOffsetDict.keys():
+                maxOffset = max(maxOffsetDict[ic], maxOffset)
+            
+            if ic == end:
+                break
+            
+        return maxOffset
                 
     
-    def getBranchGraphs(self):
+    def getBranchGraphs_backup(self):
         
         branchDict = dict()
-        
-        cnt = 0
-        for b in self.repo.heads :
-            branchDict[b.name] = cnt
-            cnt += 1
+
         #master is always 0
-        #if 'master' in branchDict.keys() :
-            
+        cnt = 0
+        if 'master' in [b.name for b in self.repo.heads]:
+            branchDict['master'] = 0
+            cnt = 1
+        for b in self.repo.heads :
+            if 'master' == b.name:
+                continue
+            branchDict[b.name] = cnt
+            cnt += 1            
         
             
         #mergeMap
@@ -210,7 +277,7 @@ class GitModel() :
             name_rev = c.name_rev.split(' ')[1].split('/')[-1]
             print 'name_rev ' + c.name_rev
             branchName = name_rev.split('~')[0]
-            offset = branchDict[branchName]
+            #offset = branchDict[branchName]
             #offset = 0
             
             #parents to string list
@@ -269,7 +336,7 @@ class GitModel() :
             
         rslt = sorted(rslt, key = lambda x : x['authored_date'])
 
-        #for r in rslt : print r
+        for r in rslt : print r
                         
         return DictListModel(rslt)
         
@@ -277,8 +344,5 @@ class GitModel() :
             
 if __name__ == '__main__' :
     gm = GitModel()
-    gm.connect("/Users/unseon_pro/myworks/RoughSketchpad")
-    configs = gm.getConfigs()
-    print configs.items()
-    #for item in sorted(configs) :
-    #    print item + "=" + configs[item]
+    gm.connect("/Users/unseon_pro/myworks/gitx")
+    bg = gm.getBranchGraphs()

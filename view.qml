@@ -3,7 +3,7 @@ import Qt 4.7
 
 Rectangle {
     width: 1000
-    height: 600
+    height: 800
 
     GitFileBrowser{ id: gfb
         objectName: "fileBrowser"

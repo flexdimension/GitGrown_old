@@ -2,7 +2,7 @@ import Qt 4.7
 
 Rectangle {
     width:400
-    height:200
+    height:400
 
     color: "#AADDDD"
 
@@ -16,10 +16,11 @@ Rectangle {
         Component { id: commitDelegate
             Rectangle { id: commitRect
                 width: 50
-                height: 200
+                height: 400
                 border.width: 1
                 border.color: "#EEEEEE"
                 color: "#DDDDDD"
+                z: -10
 
                 Rectangle { id: commitObj
                     y: parseInt(offset) * 30
@@ -29,10 +30,34 @@ Rectangle {
                     color: "#DDDD60"
                     radius: 10
 
+                    Text { id: indexText
+                        text: index
+                        font.pixelSize: 10
+                        font.family:"Courier"
+                    }
+
                     Text { id: authoredDateText
                         text: offset
                         font.pixelSize: 10
                         font.family:"Courier"
+                        anchors.bottom: commitObj.bottom
+                    }
+
+                    Text { id: hexshaText
+                        anchors.top: parent.bottom
+                        text: hexsha.substring(0, 4)
+                        font.pixelSize: 10
+                        font.family:"Courier"
+                    }
+
+                    Text { id: summaryText
+                        anchors.top: hexshaText.bottom
+                        text: summary.substring(0, 40)
+                        font.pixelSize: 9
+                        font.family:"Courier"
+                        rotation: 45
+                        transformOrigin:Item.TopLeft
+                        z: 10
                     }
 
 
@@ -47,13 +72,15 @@ Rectangle {
                     */
 
 
+
                     ImageLine {
                         x : parent.width / 2
                         y : parent.height / 2
 
                         x2 : -50
-                        y2 : parent.height / 2 + 50
+                        y2 : parent.height / 2
                     }
+
 
 
                 }
