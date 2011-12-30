@@ -22,6 +22,51 @@ Rectangle {
                 color: "#DDDDDD"
                 z: -10
 
+                Column {
+                    Repeater {
+                        model: parseInt(maxOffset) + (merge == "True" ? 0 : 1)
+                        Image {
+                            source: "images/to_parent.svg"
+                            width: 50
+                            height: 30
+                        }
+                    }
+                }
+
+                Image {
+                    //anchors.horizontalCenter: parent.horizontalCenter
+                    //y : parseInt(maxOffset) * 30
+                    y: parseInt(maxOffset) * 30
+                    source : "images/merge.svg"
+                    width: 50
+                    height: 30
+                    visible: merge == "True"
+                }
+
+                Rectangle { id: maxOffsetObj
+                    y: parseInt(maxOffset) * 30
+                    height: 30
+                    width: 30
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    color: "#EEAAAA"
+                    radius: 10
+                    opacity: 0.8
+                }
+                /*
+                ImageLine {
+                    property int diffIdx: idx_parent0 - index
+
+                    x : 0
+                    y : commitObj.y + commitObj.height / 2
+
+                    x2 : 50
+                    y2 : y
+                    z : 0
+                }
+                */
+
+
+
                 Rectangle { id: commitObj
                     y: parseInt(offset) * 30
                     height: 30
@@ -29,9 +74,11 @@ Rectangle {
                     anchors.horizontalCenter: parent.horizontalCenter
                     color: "#DDDD60"
                     radius: 10
+                    border.width:3
+                    border.color:"#505020"
 
                     Text { id: indexText
-                        text: listView.count - index - 1
+                        text: index
                         font.pixelSize: 10
                         font.family:"Courier"
                     }
@@ -52,40 +99,16 @@ Rectangle {
 
                     Text { id: summaryText
                         anchors.top: hexshaText.bottom
-                        text: summary.substring(0, 40)
+                        text: summary.substring(0, 5) == 'Merge' ? summary : ''
                         font.pixelSize: 9
                         font.family:"Courier"
-                        rotation: 45
+                        rotation: 30
                         transformOrigin:Item.TopLeft
                         z: 10
                     }
-
-
-                    /*
-                    Image {
-                        source: "images/line.svg"
-                        anchors.right: commitObj.horizontalCenter
-                        anchors.verticalCenter: commitObj.verticalCenter
-                        height: 5
-                        width: commitRect.width
-                    }
-                    */
-
-
-
-                    ImageLine {
-                        property int diffIdx: idx_parent0 - (listView.count - index - 1)
-
-                        x : 0
-                        y : parent.height / 2
-
-                        x2 : -50 * diffIdx + 25
-                        y2 : parent.height / 2
-                    }
-
-
-
                 }
+
+
 
 
 
@@ -112,7 +135,7 @@ Rectangle {
                     height: listView.currentItem.height
                     width: listView.width
                 }
-            Component.onCompleted: listView.positionViewAtEnd()
+            //Component.onCompleted: listView.positionViewAtEnd()
         }
     }
 }

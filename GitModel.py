@@ -83,6 +83,7 @@ class GitModel() :
         rslt = []
         
         for line in data.splitlines() :
+            print 'line = ', line
             commit, rest = line.split(' (', 1)
             info = rest.split(') ', 1)
             infos = info[0].split(' ', 4)
@@ -156,16 +157,16 @@ class GitModel() :
         offset
         /name_rev
         /heads
-        /merge
+        merge
         """
 
         self.commitsList = list(self.repo.iter_commits())
-        self.commitsList = sorted(self.commitsList, 
-                                  key = lambda x : x.authored_date,
-                                  reverse = True)
+        #self.commitsList = sorted(self.commitsList, 
+        #                          key = lambda x : x.authored_date,
+        #                          reverse = True)
                 
         #calculate offset for representing a graph
-        self.offsetDict = self.getOffsetDict()
+        self.offsetDict, self.maxOffsetDict = self.getOffsetDict()
         
         rslt = []
         
@@ -175,9 +176,11 @@ class GitModel() :
             item = {'hexsha': ic.hexsha,
                     'authored_date': ic.authored_date,
                     'offset': self.offsetDict[ic],
+                    'maxOffset': self.maxOffsetDict[ic],
                     'summary': ic.summary,
                     'idx_parent0': '',
-                    'idx_parent1': ''
+                    'idx_parent1': '',
+                    'merge': str(len(ic.parents) == 2)
                     }
             
             cnt = 0
@@ -187,7 +190,8 @@ class GitModel() :
                 
             rslt.append(item)
         
-        rslt = sorted(rslt, key = lambda x : x['authored_date'])
+        #rslt = sorted(rslt, key = lambda x : x['authored_date'])
+        
         
         #for i in rslt : print i
         
@@ -197,11 +201,13 @@ class GitModel() :
     def getOffsetDict(self):
         offsetDict = dict()
         maxOffsetDict = dict()
-        commitList = [self.repo.commit()]
+        graphDecorator = dict()
+        mergeList = [(self.repo.commit(), None)]
         offset = 0
         
-        while len(commitList) > 0:
-            commit = commitList.pop(0)
+        #create merged commit head list
+        while len(mergeList) > 0:
+            commit, childCommit = mergeList.pop(0)
             ic = commit
             while True:
                 if len(ic.parents) == 0:
@@ -209,21 +215,23 @@ class GitModel() :
                 if ic.parents[0] in offsetDict.keys() :
                     break
                 if len(ic.parents) == 2 :
-                    print 'push : ', ic.parents[1].hexsha
-                    commitList.append(ic.parents[1])
-                    
+                    print 'push : ', ic.parents[1].hexsha, self.commitsList.index(ic.parents[1])
+                    mergeList.append((ic.parents[1], ic))
                 ic = ic.parents[0]
                 
             endCommit = ic
-            maxOffset = self.getMaxOffset(commit, endCommit, maxOffsetDict)
+            maxOffset = self.getMaxOffset(childCommit, endCommit, maxOffsetDict)
             #print 'maxOffset = ', maxOffset
             maxOffset += 1
             #update all iter_commit as maxOffset
-            beginIndex = self.commitsList.index(commit)
-            for icc in self.commitsList[beginIndex:]:
+            if childCommit is None:
+                beginIndex = 0
+            else :
+                beginIndex = self.commitsList.index(childCommit)
+                
+            endIndex = self.commitsList.index(endCommit)
+            for icc in self.commitsList[beginIndex:endIndex+1]:
                 maxOffsetDict[icc] = maxOffset
-                if icc == ic:
-                    break
             #update all iter_parent as offset
             ic = commit
             while True:
@@ -236,13 +244,16 @@ class GitModel() :
         
         
         
-        return offsetDict
+        return offsetDict, maxOffsetDict
                 
 
     def getMaxOffset(self, begin, end, maxOffsetDict):
         #if maxOffsetDict is not initialized, return offset 0
         maxOffset = -1
-        beginIndex = self.commitsList.index(begin)
+        if begin is None:
+            beginIndex = 0
+        else :
+            beginIndex = self.commitsList.index(begin)
         for ic in self.commitsList[beginIndex:]:
             if ic in maxOffsetDict.keys():
                 maxOffset = max(maxOffsetDict[ic], maxOffset)
