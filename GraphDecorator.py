@@ -12,7 +12,7 @@ class GraphDecorator():
 
     MERGE = '\\'
     BRANCH = '/'
-    FOWARD = '|'
+    FORWARD = '|'
     BRANCH_MERGE = '<'
     BLANK = ' '
     COMMIT = '*'
@@ -51,10 +51,16 @@ class GraphDecorator():
             self.appendDecor(GraphDecorator.BRANCH)
             
     def addFoward(self):
-        self.appendDecor(GraphDecorator.FOWARD)
+        self.appendDecor(GraphDecorator.FORWARD)
         
     def getMaxOffset(self):
         return len(self.decor) - 1
+    
+    def getCommitOffset(self):
+        if GraphDecorator.COMMIT in self.decor:
+            return self.decor.index(GraphDecorator.COMMIT)
+        else:
+            return -1
     
     def getMaxBranchOffset(self):
         for i in range(len(self.decor)-1, -1, -1):
@@ -90,9 +96,29 @@ class GraphDecorator():
             self.decor[offset] = GraphDecorator.BRANCH_MERGE
         else:
             self.decor[offset] = GraphDecorator.BRANCH
+            
+    def assignForwardAt(self, offset):
+        rest = len(self.decor) - offset
+        if rest <= 0:
+            self.decor.extend([GraphDecorator.BLANK] * (1 - rest))
+        self.decor[offset] = GraphDecorator.FORWARD   
+    
+    def assignCommitAt(self, offset):
+        
+        idxCommit = -1
+        if GraphDecorator.COMMIT in self.decor:
+            idxCommit = self.decor.index(GraphDecorator.COMMIT)
+            
+        rest = len(self.decor) - offset
+        if rest <= 0:
+            self.decor.extend([GraphDecorator.BLANK] * (1 - rest))
+        self.decor[offset] = GraphDecorator.COMMIT
+        
+        if idxCommit > -1:
+            self.decor[idxCommit] = GraphDecorator.FORWARD     
         
     def __str__(self):
-        return self.decor.__repr__()
+        return reduce(lambda s,t:s+t, self.decor)
         
 if __name__ == '__main__':
     gd = GraphDecorator()
@@ -107,3 +133,7 @@ if __name__ == '__main__':
     print gd.getMaxBranchOffset()
     gd.assignBranchAt(5)
     print gd
+    print gd.getCommitOffset()    
+    gd.assignCommitAt(5)
+    print gd
+    print gd.getCommitOffset()

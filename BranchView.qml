@@ -22,6 +22,7 @@ Rectangle {
                 color: "#DDDDDD"
                 z: -10
 
+                /*
                 Column {
                     Repeater {
                         model: parseInt(maxOffset) + (merge == "True" ? 0 : 1)
@@ -32,6 +33,7 @@ Rectangle {
                         }
                     }
                 }
+                */
 
                 Image {
                     //anchors.horizontalCenter: parent.horizontalCenter
@@ -84,7 +86,7 @@ Rectangle {
                     }
 
                     Text { id: authoredDateText
-                        text: offset
+                        text: decor
                         font.pixelSize: 10
                         font.family:"Courier"
                         anchors.bottom: commitObj.bottom

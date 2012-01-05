@@ -7,6 +7,7 @@ Created on 2011/12/04
 from git import *
 from PyListModel import PyListModel
 from DictListModel import DictListModel
+from GraphDecorator import GraphDecorator
 
 import time
 
@@ -166,7 +167,7 @@ class GitModel() :
         #                          reverse = True)
                 
         #calculate offset for representing a graph
-        self.offsetDict, self.maxOffsetDict = self.getOffsetDict()
+        self.graphDecorator = self.getGraphDecorator()
         
         rslt = []
         
@@ -175,8 +176,9 @@ class GitModel() :
         for ic in self.commitsList:
             item = {'hexsha': ic.hexsha,
                     'authored_date': ic.authored_date,
-                    'offset': self.offsetDict[ic],
-                    'maxOffset': self.maxOffsetDict[ic],
+                    'offset': self.graphDecorator[ic].getCommitOffset(),
+                    'maxOffset': self.graphDecorator[ic].getMaxOffset(),
+                    'decor': str(self.graphDecorator[ic]),
                     'summary': ic.summary,
                     'idx_parent0': '',
                     'idx_parent1': '',
@@ -187,6 +189,8 @@ class GitModel() :
             for p in ic.parents:
                 item['idx_parent'+str(cnt)] = self.commitsList.index(p)
                 cnt += 1
+            
+            print ic.hexsha, self.graphDecorator[ic]
                 
             rslt.append(item)
         
@@ -196,70 +200,104 @@ class GitModel() :
         #for i in rslt : print i
         
         return DictListModel(rslt)
-        
-        
-    def getOffsetDict(self):
-        offsetDict = dict()
-        maxOffsetDict = dict()
-        graphDecorator = dict()
+            
+    def getGraphDecorator(self):
+        '''
+        return dict of decorator for presenting commits
+        '''
+        self.graphDecorator = dict()
+        #tuple of merge list is composed from commit and its child
         mergeList = [(self.repo.commit(), None)]
         offset = 0
         
         #create merged commit head list
         while len(mergeList) > 0:
-            commit, childCommit = mergeList.pop(0)
-            ic = commit
+            subFirstCommit, mergeCommit = mergeList.pop(0)
+            ic = subFirstCommit
             while True:
+                #finish when end of commit
                 if len(ic.parents) == 0:
+                    subLastCommit = ic
+                    branchCommit = None
                     break
-                if ic.parents[0] in offsetDict.keys() :
+                #finish when accessing a commit which have been already met
+                if ic.parents[0] in self.graphDecorator.keys() and \
+                   self.graphDecorator[ic.parents[0]].getCommitOffset() > -1:
+                    subLastCommit = ic
+                    branchCommit = ic.parents[0]
+                    print 'subLastCommit=', ic.hexsha
+                    print 'branchCommit=', branchCommit.hexsha
                     break
+                
+                #push merged commit when parents are two
                 if len(ic.parents) == 2 :
-                    print 'push : ', ic.parents[1].hexsha, self.commitsList.index(ic.parents[1])
+                    #print 'push : ', ic.parents[1].hexsha, self.commitsList.index(ic.parents[1])
                     mergeList.append((ic.parents[1], ic))
                 ic = ic.parents[0]
                 
-            endCommit = ic
-            maxOffset = self.getMaxOffset(childCommit, endCommit, maxOffsetDict)
+            maxOffset = self.getMaxOffset(mergeCommit, branchCommit, self.graphDecorator)
             #print 'maxOffset = ', maxOffset
             maxOffset += 1
             #update all iter_commit as maxOffset
-            if childCommit is None:
-                beginIndex = 0
-            else :
-                beginIndex = self.commitsList.index(childCommit)
+            if mergeCommit is not None:
+                if mergeCommit not in self.graphDecorator.keys():
+                    self.graphDecorator[mergeCommit] = GraphDecorator()
+                self.graphDecorator[mergeCommit].assignMergeAt(maxOffset)
+                idxMergeCommit = self.commitsList.index(mergeCommit)
+            else:
+                idxMergeCommit = -1
+            
+            
+            if branchCommit is not None:
+                if branchCommit not in self.graphDecorator.keys():
+                    self.graphDecorator[branchCommit] = GraphDecorator()
+                self.graphDecorator[branchCommit].assignBranchAt(maxOffset)
+                idxBranchCommit = self.commitsList.index(branchCommit)
+            else:
+                idxBranchCommit = None
+
                 
-            endIndex = self.commitsList.index(endCommit)
-            for icc in self.commitsList[beginIndex:endIndex+1]:
-                maxOffsetDict[icc] = maxOffset
+            for icc in self.commitsList[idxMergeCommit + 1:idxBranchCommit]:
+                if icc not in self.graphDecorator.keys():
+                    self.graphDecorator[icc] = GraphDecorator()
+                self.graphDecorator[icc].assignForwardAt(maxOffset)
+                #print 'f', self.graphDecorator[icc]
+                
+            
+                
             #update all iter_parent as offset
-            ic = commit
+            ic = subFirstCommit
             while True:
-                offsetDict[ic] = maxOffset
-                if ic == endCommit:
+                self.graphDecorator[ic].assignCommitAt(maxOffset)
+                if ic == subLastCommit:
                     break;
                 ic = ic.parents[0]
                 
-        #for i in self.commitsList: print i.hexsha, offsetDict[i]
+                
+                
+        for i in self.commitsList: print i.hexsha, self.graphDecorator[i]
         
         
         
-        return offsetDict, maxOffsetDict
+        return self.graphDecorator
                 
 
-    def getMaxOffset(self, begin, end, maxOffsetDict):
+    def getMaxOffset(self, begin, end, graphDecorator):
         #if maxOffsetDict is not initialized, return offset 0
         maxOffset = -1
         if begin is None:
             beginIndex = 0
         else :
             beginIndex = self.commitsList.index(begin)
-        for ic in self.commitsList[beginIndex:]:
-            if ic in maxOffsetDict.keys():
-                maxOffset = max(maxOffsetDict[ic], maxOffset)
             
-            if ic == end:
-                break
+        if end is None:
+            endIndex = None
+        else :
+            endIndex = self.commitsList.index(end) + 1
+            
+        for ic in self.commitsList[beginIndex:endIndex]:
+            if ic in graphDecorator.keys():
+                maxOffset = max(graphDecorator[ic].getMaxOffset(), maxOffset)
             
         return maxOffset       
         
