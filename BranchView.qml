@@ -22,27 +22,53 @@ Rectangle {
                 color: "#DDDDDD"
                 z: -10
 
-                /*
+
                 Column {
                     Repeater {
-                        model: parseInt(maxOffset) + (merge == "True" ? 0 : 1)
+                        model: decor.length
+
+
+
                         Image {
-                            source: "images/to_parent.svg"
+                            source: decorToFileName(decor.substr(index, 1))
                             width: 50
                             height: 30
+                            function decorToFileName(d) {
+                                switch(d) {
+                                case '\\':
+                                    return 'images/merge.svg'
+                                case '/':
+                                    return 'images/branch.svg'
+                                case '|':
+                                case '*':
+                                    return 'images/forward.svg'
+                                default:
+                                    return ''
+                                }
+                            }
                         }
                     }
                 }
-                */
 
-                Image {
-                    //anchors.horizontalCenter: parent.horizontalCenter
-                    //y : parseInt(maxOffset) * 30
-                    y: parseInt(maxOffset) * 30
-                    source : "images/merge.svg"
-                    width: 50
-                    height: 30
-                    visible: merge == "True"
+                Rectangle { id: feedLine
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    y: (commitOffset(decor) + 1) * 30
+                    color: "#2222FF"
+
+                    width: 10
+                    height: (maxFeed(decor) - commitOffset(decor) -1) * 30
+                    function maxFeed(d) {
+                        for(var i = d.length - 1; i >= 0; i--) {
+                            if("\\/<*".indexOf(d.charAt(i)) != -1)
+                                break;
+                        }
+                        return i
+                    }
+
+                    function commitOffset(d) {
+                        return d.indexOf('*');
+                    }
+
                 }
 
                 Rectangle { id: maxOffsetObj
@@ -52,22 +78,8 @@ Rectangle {
                     anchors.horizontalCenter: parent.horizontalCenter
                     color: "#EEAAAA"
                     radius: 10
-                    opacity: 0.8
+                    opacity: 0
                 }
-                /*
-                ImageLine {
-                    property int diffIdx: idx_parent0 - index
-
-                    x : 0
-                    y : commitObj.y + commitObj.height / 2
-
-                    x2 : 50
-                    y2 : y
-                    z : 0
-                }
-                */
-
-
 
                 Rectangle { id: commitObj
                     y: parseInt(offset) * 30
@@ -86,7 +98,7 @@ Rectangle {
                     }
 
                     Text { id: authoredDateText
-                        text: decor
+                        text: offset
                         font.pixelSize: 10
                         font.family:"Courier"
                         anchors.bottom: commitObj.bottom
