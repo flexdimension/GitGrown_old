@@ -16,6 +16,7 @@ class GraphDecorator():
     BRANCH_MERGE = '<'
     BLANK = ' '
     COMMIT = '*'
+    FORWARD_MERGE = 'v'
 
     def __init__(self):
         '''
@@ -102,6 +103,12 @@ class GraphDecorator():
         if rest <= 0:
             self.decor.extend([GraphDecorator.BLANK] * (1 - rest))
         self.decor[offset] = GraphDecorator.FORWARD   
+        
+    def assignForwardMergeAt(self, offset):
+        rest = len(self.decor) - offset
+        if rest <= 0:
+            self.decor.extend([GraphDecorator.BLANK] * (1 - rest))
+        self.decor[offset] = GraphDecorator.FORWARD_MERGE
     
     def assignCommitAt(self, offset):
         

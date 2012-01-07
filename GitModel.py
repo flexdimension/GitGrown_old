@@ -235,6 +235,13 @@ class GitModel() :
                     mergeList.append((ic.parents[1], ic))
                 ic = ic.parents[0]
                 
+
+            if subFirstCommit in self.graphDecorator.keys() and \
+               self.graphDecorator[subFirstCommit].getCommitOffset() >= 0:
+                offsetSFC = self.graphDecorator[subFirstCommit].getCommitOffset()
+                self.graphDecorator[mergeCommit].assignForwardMergeAt(offsetSFC)
+                continue
+                
             maxOffset = self.getMaxOffset(mergeCommit, branchCommit, self.graphDecorator)
             #print 'maxOffset = ', maxOffset
             maxOffset += 1

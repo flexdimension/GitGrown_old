@@ -39,6 +39,8 @@ Rectangle {
                                     return 'images/merge.svg'
                                 case '/':
                                     return 'images/branch.svg'
+                                case 'v':
+                                    return 'images/forward_merge.svg'
                                 case '|':
                                 case '*':
                                     return 'images/forward.svg'
