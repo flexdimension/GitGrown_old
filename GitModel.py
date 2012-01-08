@@ -207,9 +207,7 @@ class GitModel() :
         '''
         self.graphDecorator = dict()
         #tuple of merge list is composed from commit and its child
-        mergeList = [(self.repo.commit(), None)]
-        offset = 0
-        
+        mergeList = [(self.repo.commit(), None)]        
         #create merged commit head list
         while len(mergeList) > 0:
             subFirstCommit, mergeCommit = mergeList.pop(0)
