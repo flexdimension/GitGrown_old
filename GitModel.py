@@ -304,10 +304,53 @@ class GitModel() :
             if ic in graphDecorator.keys():
                 maxOffset = max(graphDecorator[ic].getMaxOffset(), maxOffset)
             
-        return maxOffset       
+        return maxOffset
+    
+    def traverse(self):
+        rslt = []
+        
+        
+        
+        
+        return rslt 
+    
+    def getBranchGraphs2(self):
+        
+        heads = self.repo.heads
+        
+        #headCommitList a list of a tuble (head commit and its child)
+        headCommitList = map(lambda x:(self.repo.commit(x), None), heads)
+        
+        rslt = []
+        
+        while len(headCommitList) > 0:
+            stream = []
+            commit, childCommit = headCommitList.pop()
+            
+            ic = commit
+            #if ic is already exist insert list and quit
+            while True:
+                if ic in rslt:
+                    if childCommit is not None:
+                        idxInsert = rslt.index(childCommit) + 1
+                    else:
+                        idxInsert = 0
+                    rslt = rslt[0:idxInsert] + stream + rslt[idxInsert:]
+                    break
+                else:
+                    stream.append(ic)
+                    
+                    parents = ic.parents
+                    if len(parents) == 0:
+                        break
+                    else:
+                        if len(parents) > 1:
+                            headCommitList.append(parents[1])
+                        ic = ic.parents[0]
+        
         
             
 if __name__ == '__main__' :
     gm = GitModel()
     gm.connect("/Users/unseon_pro/myworks/gitx")
-    bg = gm.getBranchGraphs()
+    bg = gm.getBranchGraphs2()
