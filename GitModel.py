@@ -318,6 +318,51 @@ class GitModel() :
         
         return rslt 
     
+    def traverseBranch(self, commit, traversedList, level, levelList, parentCommit):
+        assert(commit is not None)
+        
+        cm = commit
+        
+        branches = []
+        branchCommits = []
+
+        while True:
+            branchCommits.append(cm)
+            levelList[cm] = level
+            
+            if len(cm.parents) == 0 or cm.parents[0] in traversedList:
+                break;
+            if len(cm.parents) == 2:
+                branches.append(cm)
+            cm = cm.parents[0]
+        
+        if parentCommit is None:
+            idx = 0
+        else:                
+            idx = traversedList.index(parentCommit) + 1
+        
+        #merge    
+        traversedList = traversedList[:idx] + \
+                        branchCommits + \
+                        traversedList[idx:]
+
+        for c in branches:
+            traversedList = self.traverseBranch(c.parents[1], traversedList, level+1, levelList, c)
+            
+        return traversedList
+                
+    def printTraverse(self):
+        traversedList = []
+        levelList = dict()
+        
+        tl = self.traverseBranch(self.repo.commit('master'),
+                            traversedList, 0, levelList, None)
+        
+        for i in tl:
+            print ' ' * levelList[i] + 'O' + '\t' + i.hexsha + ' ' + i.summary[:20]
+                
+        
+    
     def getBranchGraphs2(self):
         
         heads = self.repo.heads
@@ -399,9 +444,6 @@ class GitModel() :
             if len(commit.parents) == 2:
                 self.traverseCommit(commit.parents[1])            
             self.traversedList.append(commit)
-        
-                     
-            
             
 if __name__ == '__main__' :
     gm = GitModel()
