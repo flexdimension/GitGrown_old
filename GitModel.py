@@ -428,8 +428,24 @@ class GitModel() :
         '''
         item = {'hexsha': commit.hexsha,
                 'authored_date': commit.authored_date,
-                'summary': commit.summary
+                'summary': commit.summary,
+                'isMerged': False,
+                'mergeInto': None,
+                'mergeFrom': None,
                 }
+        
+        isMerged = commit.summary[:5] == 'Merge'
+        if isMerged :
+            '''
+            parse summary to get mergeFrom and mergeInto
+            '''
+            parts = commit.summary.split('\'')
+            item['mergeFrom'] = parts[1]
+            
+            if len(parts) == 2 :
+                item['mergeInto'] = 'master'
+            else:
+                item['mergeInto'] = parts[2][6:]
         
         return item
         

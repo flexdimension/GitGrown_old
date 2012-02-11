@@ -28,14 +28,15 @@ Rectangle {
                     color: "#DDDD60"
                     radius: 10
                     border.width:3
-                    border.color:"#505020"
+                    border.color:"#909040"
 
                     Text { id: indexText
                         text: index
+                        anchors.horizontalCenter: parent.horizontalCenter
                         font.pixelSize: 10
                         font.family:"Courier"
                     }
-
+/*
                     Text { id: authoredDateText
                         text: offset
                         font.pixelSize: 10
@@ -44,18 +45,19 @@ Rectangle {
                     }
 
                     Text { id: hexshaText
-                        anchors.top: parent.bottom
+                        anchors.left: parent.right
+                        anchors.verticalCenter: parent.verticalCenter
                         text: hexsha.substring(0, 4) + '\n' + idx_parent0 + '\n' + idx_parent1
                         font.pixelSize: 10
                         font.family:"Courier"
                     }
-
+*/
                     Text { id: summaryText
-                        anchors.top: hexshaText.bottom
+                        anchors.left: parent.right
                         text: summary.substring(0, 5) == 'Merge' ? summary : ''
                         font.pixelSize: 9
                         font.family:"Courier"
-                        rotation: 30
+                        //rotation: 30
                         transformOrigin:Item.TopLeft
                         z: 10
                     }
@@ -77,7 +79,7 @@ Rectangle {
 
         ListView { id: listView
             anchors.fill: parent
-            model: branchGraphModel
+            model: commitListModel2
             delegate: commitDelegate
             orientation: ListView.Vertical
             //layoutDirection:Qt.RightToLeft
