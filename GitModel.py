@@ -368,15 +368,15 @@ class GitModel() :
         
         self.traversedList = []
         
-        rslt = self.traverseCommit(masterCommit, [])
+        self.traverseCommit(masterCommit)
+        self.traversedList.reverse()
         
-        return rslt
+        return self.traversedList
        
-    def traverseCommit(self, commit, childFlow):
+    def traverseCommit(self, commit):
         
         currentFlow = []
-        mergedParents = []
-                
+
         while True :
             currentFlow.append(commit)
             parents = commit.parents
@@ -384,38 +384,21 @@ class GitModel() :
             if len(parents) == 0:
                 print "branch3:", commit, "- commit terminated"
                 break
-            if len(parents) == 1:
+            else:
                 p0 = parents[0]
-                if p0 in childFlow:
+                if p0 in self.traversedList:
                     print "branch3:", commit, "- return to branch"
                     break
                 else:
                     print "branch3:", commit, "- forward to parents"
                     commit = p0
                     continue
-            else: #if commit has 2 parents
-                p0 = parents[0]
-                p1 = parents[1]
-                if p0 in childFlow:
-                    ######################################
-                    break
-                elif p0 not in childFlow:
-                    mergedParents.append((p1, commit))
-                    
-                print "branch3:", commit, "- forward to parents"
-                commit = p0 
                 
-        for commitInfo in mergedParents:
-            commit = commitInfo[0]
-            child = commitInfo[1]
-            
-            print "branch3:", child, "- merged by", commit
-            childFlow = self.traverseCommit(commit, currentFlow)
-            index = currentFlow.index(child) + 1
-            currentFlow = currentFlow[0:index] + childFlow + currentFlow[index:]
-            
-            
-        return currentFlow
+        currentFlow.reverse()                
+        for commit in currentFlow:
+            if len(commit.parents) == 2:
+                self.traverseCommit(commit.parents[1])            
+            self.traversedList.append(commit)
         
                      
             
