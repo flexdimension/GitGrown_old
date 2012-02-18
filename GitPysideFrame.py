@@ -74,7 +74,8 @@ class GitPysideFrame(QMainWindow):
         self.gm = GitModel()
         #self.gm.connect('/Users/unseon_pro/myworks/RoughSketchpad')
         #self.gm.connect('.')
-        self.gm.connect('/Users/unseon_pro/myworks/gitx')
+        #self.gm.connect('/Users/unseon_pro/myworks/gitx')
+        self.gm.connect('/Users/unseon_pro/myworks/FlowsSample')
         
         self.configModel = self.gm.getConfigModel()
         
