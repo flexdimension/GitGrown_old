@@ -247,7 +247,11 @@ class GitModel() :
             if mergeCommit is not None:
                 if mergeCommit not in self.graphDecorator.keys():
                     self.graphDecorator[mergeCommit] = GraphDecorator()
-                self.graphDecorator[mergeCommit].assignMergeAt(maxOffset)
+                if self.graphDecorator[mergeCommit].lastDecor() == GraphDecorator.BRANCH:
+                    maxOffset -= 1
+                    self.graphDecorator[mergeCommit].assignMergeBranchAt(maxOffset)
+                else:
+                    self.graphDecorator[mergeCommit].assignMergeAt(maxOffset)
                 idxMergeCommit = self.commitsList.index(mergeCommit)
             else:
                 idxMergeCommit = -1
@@ -319,13 +323,15 @@ class GitModel() :
         heads = self.repo.heads
         
         #headCommitList a list of a tuble (head commit and its child)
-        headCommitList = map(lambda x:(self.repo.commit(x), None), heads)
+        #headCommitList = map(lambda x:(self.repo.commit(x), None), heads)
+        headCommitList = [(heads.master.commit, None)]
         
         rslt = []
         
         while len(headCommitList) > 0:
             stream = []
             commit, childCommit = headCommitList.pop()
+            print commit, "is poped : ", len(headCommitList) 
             
             ic = commit
             #if ic is already exist insert list and quit
@@ -345,12 +351,78 @@ class GitModel() :
                         break
                     else:
                         if len(parents) > 1:
-                            headCommitList.append(parents[1])
+                            headCommitList.append((parents[1], ic))
+                            print parents[1], "is appended", len(headCommitList) 
                         ic = ic.parents[0]
+                        
+        return rslt
+
+
+    def getBranchGraphs3(self):
+        heads = self.repo.heads
+        masterCommit = heads.master.commit
         
+        self.directParentDict = dict()
+        self.branchParentDict = dict()
+        self.mergeParentDict = dict()
         
+        self.traversedList = []
+        
+        rslt = self.traverseCommit(masterCommit, [])
+        
+        return rslt
+       
+    def traverseCommit(self, commit, childFlow):
+        
+        currentFlow = []
+        mergedParents = []
+                
+        while True :
+            currentFlow.append(commit)
+            parents = commit.parents
+            
+            if len(parents) == 0:
+                print "branch3:", commit, "- commit terminated"
+                break
+            if len(parents) == 1:
+                p0 = parents[0]
+                if p0 in childFlow:
+                    print "branch3:", commit, "- return to branch"
+                    break
+                else:
+                    print "branch3:", commit, "- forward to parents"
+                    commit = p0
+                    continue
+            else: #if commit has 2 parents
+                p0 = parents[0]
+                p1 = parents[1]
+                if p0 in childFlow:
+                    ######################################
+                    break
+                elif p0 not in childFlow:
+                    mergedParents.append((p1, commit))
+                    
+                print "branch3:", commit, "- forward to parents"
+                commit = p0 
+                
+        for commitInfo in mergedParents:
+            commit = commitInfo[0]
+            child = commitInfo[1]
+            
+            print "branch3:", child, "- merged by", commit
+            childFlow = self.traverseCommit(commit, currentFlow)
+            index = currentFlow.index(child) + 1
+            currentFlow = currentFlow[0:index] + childFlow + currentFlow[index:]
+            
+            
+        return currentFlow
+        
+                     
+            
             
 if __name__ == '__main__' :
     gm = GitModel()
-    gm.connect("/Users/unseon_pro/myworks/gitx")
-    bg = gm.getBranchGraphs2()
+    gm.connect("/Users/unseon_pro/myworks/FlowsSample")
+    bg = gm.getBranchGraphs3()
+    for i in bg :
+        print "traversed", i.hexsha
