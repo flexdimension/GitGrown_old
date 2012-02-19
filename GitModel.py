@@ -481,13 +481,10 @@ class GitModel() :
         heads = self.repo.heads
         masterCommit = heads.master.commit
         
-        self.directParentDict = dict()
-        self.branchParentDict = dict()
-        self.mergeParentDict = dict()
-        
         self.traversedList = []
         
         self.traverseCommit(masterCommit)
+
         self.traversedList.reverse()
                 
         return self.traversedList
