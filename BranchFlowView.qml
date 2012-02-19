@@ -22,16 +22,17 @@ Rectangle {
                 color: "#DDDDDD"
                 z: -10
                 Rectangle { id: commitObj
+                    x: offset * 30
                     height: 30
                     width: 30
-                    anchors.horizontalCenter: parent.horizontalCenter
+                    //anchors.horizontalCenter: parent.horizontalCenter
                     color: "#DDDD60"
                     radius: 10
                     border.width:3
                     border.color:"#909040"
 
                     Text { id: indexText
-                        text: index
+                        text: offset
                         anchors.horizontalCenter: parent.horizontalCenter
                         font.pixelSize: 10
                         font.family:"Courier"
@@ -79,7 +80,7 @@ Rectangle {
 
         ListView { id: listView
             anchors.fill: parent
-            model: commitListModel2
+            model: flowModel
             delegate: commitDelegate
             orientation: ListView.Vertical
             //layoutDirection:Qt.RightToLeft

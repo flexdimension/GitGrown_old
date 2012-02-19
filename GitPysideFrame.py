@@ -89,6 +89,9 @@ class GitPysideFrame(QMainWindow):
         self.branchGraphModel = self.gm.getBranchGraphs()
         self.commitListModel2 = self.gm.getCommitListModelFromBranch('master')
         
+        self.flowModel = self.gm.getFlowModelWithBranches(
+                                      ['master', 'development'])
+        
         # Create an URL to the QML file
         #url = QUrl('view.qml')
         url = QUrl('BranchFlowView.qml')
@@ -100,8 +103,9 @@ class GitPysideFrame(QMainWindow):
         rootContext.setContextProperty('fileListModel', self.fileListModel)
         rootContext.setContextProperty('fileViewModel', self.fileViewModel)
         rootContext.setContextProperty('commitListModel', self.commitListModel)
-        rootContext.setContextProperty('commitListModel2', self.commitListModel2)
+        #rootContext.setContextProperty('commitListModel2', self.commitListModel2)
         rootContext.setContextProperty('branchGraphModel', self.branchGraphModel)
+        rootContext.setContextProperty('flowModel', self.flowModel)
         #self.view.setResizeMode(QDeclarativeView.SizeRootObjectToView)
 
         
