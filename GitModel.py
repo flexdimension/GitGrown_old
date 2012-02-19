@@ -318,6 +318,63 @@ class GitModel() :
         
         return rslt 
     
+    def traverseBranch(self, commit, level, parentCommit):
+        assert(commit is not None)
+        
+        cm = commit
+        
+        branches = []
+        branchCommits = []
+
+        while True:
+            branchCommits.append(cm)
+            #self.decoList[cm] = GraphDecorator()
+            
+            
+            if len(cm.parents) == 0 or cm.parents[0] in self.traversedList:
+                break;
+            if len(cm.parents) == 2:
+                branches.append(cm)
+            cm = cm.parents[0]
+        
+        if parentCommit is None:
+            idx = 0
+        else:                
+            idx = self.traversedList.index(parentCommit) + 1
+            if len(parentCommit.parents) is None:
+                pass
+            elif parentCommit.parents[0] != cm.parents[0]:
+                #firstBranchedCommit = self.traversedList.index(branchCommits[-1])
+                #pFirstBranchedCommit = self.traversedList.index(branchCommits[-1].parents[0])                
+                level = level + 1
+        
+        #merge    
+        self.traversedList = self.traversedList[:idx] + \
+                        branchCommits + \
+                        self.traversedList[idx:]
+
+
+
+        
+        for cm in branchCommits:
+            self.levelList[cm] = level
+
+        for c in branches:
+            self.traverseBranch(c.parents[1], level+1, c)
+
+                
+    def printTraverse(self):
+        self.traversedList = []
+        self.levelList = dict()
+        self.decoList = dict()
+        
+        self.traverseBranch(self.repo.commit('master'), 0, None)
+        
+        for i in self.traversedList:
+            print ' ' * self.levelList[i] + 'O' + '\t' + i.hexsha + ' ' + i.summary[:20]
+                
+        
+    
     def getBranchGraphs2(self):
         
         heads = self.repo.heads
@@ -354,10 +411,72 @@ class GitModel() :
                             headCommitList.append((parents[1], ic))
                             print parents[1], "is appended", len(headCommitList) 
                         ic = ic.parents[0]
-                        
         return rslt
 
+    def convertToDict(self, commit):
+        '''
+        convert a commit to a dict item with keys
+        
+        Params:
+            commit
+            
+        Return:
+            a dict with keys
+                hexsha
+                authored_date
+                summary
+        '''
+        item = {'hexsha': commit.hexsha,
+                'authored_date': commit.authored_date,
+                'summary': commit.summary,
+                'isMerged': False,
+                'mergeInto': None,
+                'mergeFrom': None,
+                }
+        
+        isMerged = commit.summary[:5] == 'Merge'
+        if isMerged :
+            '''
+            parse summary to get mergeFrom and mergeInto
+            '''
+            parts = commit.summary.split('\'')
+            item['mergeFrom'] = parts[1]
+            
+            if len(parts) == 2 :
+                item['mergeInto'] = 'master'
+            else:
+                item['mergeInto'] = parts[2][6:]
+        
+        return item
+        
+                        
+    def getCommitListModelFromBranch(self, branchName):
+        '''
+        get list of commits come from branchName
+        
+        Params
+        branchName : str
+        
+        Return
+        DictListModel (list of dict)
+            keys:
+                hexsha
+                authored_date
+                summary
+        '''
+        commitList = []
+        headCommit = self.repo.commit(branchName)
+        commitList.append(self.convertToDict(headCommit))
 
+        ic = headCommit
+        while True:
+            if len(ic.parents) is 0:
+                break
+            ic = ic.parents[0]
+            commitList.append(self.convertToDict(ic))
+        
+        return DictListModel(commitList)
+    
     def getBranchGraphs3(self):
         heads = self.repo.heads
         masterCommit = heads.master.commit
@@ -370,7 +489,7 @@ class GitModel() :
         
         self.traverseCommit(masterCommit)
         self.traversedList.reverse()
-        
+                
         return self.traversedList
        
     def traverseCommit(self, commit):
@@ -399,9 +518,6 @@ class GitModel() :
             if len(commit.parents) == 2:
                 self.traverseCommit(commit.parents[1])            
             self.traversedList.append(commit)
-        
-                     
-            
             
 if __name__ == '__main__' :
     gm = GitModel()
