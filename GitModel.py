@@ -432,6 +432,7 @@ class GitModel() :
                 'isMerged': False,
                 'mergeInto': None,
                 'mergeFrom': None,
+                'offset': 0,
                 }
         
         isMerged = commit.summary[:5] == 'Merge'
@@ -476,6 +477,68 @@ class GitModel() :
             commitList.append(self.convertToDict(ic))
         
         return DictListModel(commitList)
+    
+    def getFlowModel(self):
+        flowList = self.getBranchGraphs3()
+        commitInfos = map(lambda x:self.convertToDict(x), flowList)
+        return DictListModel(commitInfos)
+    
+    def getFlowModelWithBranches(self, branches):
+        
+        headCommits = map(lambda x: self.repo.commit(x), branches)
+
+        traversedList = self.getBranchGraphs3()
+        commitInfos = map(lambda x:self.convertToDict(x), traversedList)
+
+
+        self.traversedList = []
+        
+        for i in range(len(headCommits)):
+            print "flow:", branches[i]
+            cf = self.getCommitFlow(headCommits[i])
+                 
+            for ic in cf:
+                idx = traversedList.index(ic)
+                if commitInfos[idx]['offset'] == 0:
+                    commitInfos[idx]['offset'] = i + 1
+        
+        return DictListModel(commitInfos)
+
+    def getCommitFlow(self, commit):
+        currentFlow = []
+
+        while True :
+            currentFlow.append(commit)
+            parents = commit.parents
+            
+            if len(parents) == 0:
+                #print "branch3:", commit, "- commit terminated"
+                break
+            elif len(parents) == 1:
+                p0 = parents[0]
+                if p0 in self.traversedList:
+                    #print "branch3:", commit, "- return to branch"
+                    break
+                else:
+                    #print "branch3:", commit, "- forward to parents"
+                    commit = p0
+                    continue
+            else: #len(parents) == 2
+                p0 = parents[0]
+                p1 = parents[1]
+                if p0 in self.traversedList:
+                    commit = p1
+                    continue
+                else:
+                    commit = p0
+                    continue
+                
+        for i in currentFlow:
+            print "getCommitFlow", i.hexsha
+                
+        return currentFlow                
+
+
     
     def getBranchGraphs3(self):
         heads = self.repo.heads
