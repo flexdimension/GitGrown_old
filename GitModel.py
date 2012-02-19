@@ -382,15 +382,15 @@ class GitModel() :
             parents = commit.parents
             
             if len(parents) == 0:
-                print "branch3:", commit, "- commit terminated"
+                #print "branch3:", commit, "- commit terminated"
                 break
             else:
                 p0 = parents[0]
                 if p0 in self.traversedList:
-                    print "branch3:", commit, "- return to branch"
+                    #print "branch3:", commit, "- return to branch"
                     break
                 else:
-                    print "branch3:", commit, "- forward to parents"
+                    #print "branch3:", commit, "- forward to parents"
                     commit = p0
                     continue
                 
