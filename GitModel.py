@@ -487,9 +487,9 @@ class GitModel() :
         
         headCommits = map(lambda x: self.repo.commit(x), branches)
 
+        #Get traversedList and convert it to commitInfos
         traversedList = self.getBranchGraphs3()
         commitInfos = map(lambda x:self.convertToDict(x), traversedList)
-
 
         self.traversedList = []
         
@@ -499,8 +499,7 @@ class GitModel() :
                  
             for ic in cf:
                 idx = traversedList.index(ic)
-                if commitInfos[idx]['offset'] == 0:
-                    commitInfos[idx]['offset'] = i + 1
+                commitInfos[idx]['offset'] = i + 1
         
         return DictListModel(commitInfos)
 
@@ -509,6 +508,7 @@ class GitModel() :
 
         while True :
             currentFlow.append(commit)
+            self.traversedList.append(commit)
             parents = commit.parents
             
             if len(parents) == 0:
