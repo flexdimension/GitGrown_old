@@ -207,9 +207,7 @@ class GitModel() :
         '''
         self.graphDecorator = dict()
         #tuple of merge list is composed from commit and its child
-        mergeList = [(self.repo.commit(), None)]
-        offset = 0
-        
+        mergeList = [(self.repo.commit(), None)]        
         #create merged commit head list
         while len(mergeList) > 0:
             subFirstCommit, mergeCommit = mergeList.pop(0)
@@ -249,7 +247,11 @@ class GitModel() :
             if mergeCommit is not None:
                 if mergeCommit not in self.graphDecorator.keys():
                     self.graphDecorator[mergeCommit] = GraphDecorator()
-                self.graphDecorator[mergeCommit].assignMergeAt(maxOffset)
+                if self.graphDecorator[mergeCommit].lastDecor() == GraphDecorator.BRANCH:
+                    maxOffset -= 1
+                    self.graphDecorator[mergeCommit].assignMergeBranchAt(maxOffset)
+                else:
+                    self.graphDecorator[mergeCommit].assignMergeAt(maxOffset)
                 idxMergeCommit = self.commitsList.index(mergeCommit)
             else:
                 idxMergeCommit = -1
@@ -306,10 +308,280 @@ class GitModel() :
             if ic in graphDecorator.keys():
                 maxOffset = max(graphDecorator[ic].getMaxOffset(), maxOffset)
             
-        return maxOffset       
+        return maxOffset
+    
+    def traverse(self):
+        rslt = []
         
+        
+        
+        
+        return rslt 
+    
+    def traverseBranch(self, commit, level, parentCommit):
+        assert(commit is not None)
+        
+        cm = commit
+        
+        branches = []
+        branchCommits = []
+
+        while True:
+            branchCommits.append(cm)
+            #self.decoList[cm] = GraphDecorator()
+            
+            
+            if len(cm.parents) == 0 or cm.parents[0] in self.traversedList:
+                break;
+            if len(cm.parents) == 2:
+                branches.append(cm)
+            cm = cm.parents[0]
+        
+        if parentCommit is None:
+            idx = 0
+        else:                
+            idx = self.traversedList.index(parentCommit) + 1
+            if len(parentCommit.parents) is None:
+                pass
+            elif parentCommit.parents[0] != cm.parents[0]:
+                #firstBranchedCommit = self.traversedList.index(branchCommits[-1])
+                #pFirstBranchedCommit = self.traversedList.index(branchCommits[-1].parents[0])                
+                level = level + 1
+        
+        #merge    
+        self.traversedList = self.traversedList[:idx] + \
+                        branchCommits + \
+                        self.traversedList[idx:]
+
+
+
+        
+        for cm in branchCommits:
+            self.levelList[cm] = level
+
+        for c in branches:
+            self.traverseBranch(c.parents[1], level+1, c)
+
+                
+    def printTraverse(self):
+        self.traversedList = []
+        self.levelList = dict()
+        self.decoList = dict()
+        
+        self.traverseBranch(self.repo.commit('master'), 0, None)
+        
+        for i in self.traversedList:
+            print ' ' * self.levelList[i] + 'O' + '\t' + i.hexsha + ' ' + i.summary[:20]
+                
+        
+    
+    def getBranchGraphs2(self):
+        
+        heads = self.repo.heads
+        
+        #headCommitList a list of a tuble (head commit and its child)
+        #headCommitList = map(lambda x:(self.repo.commit(x), None), heads)
+        headCommitList = [(heads.master.commit, None)]
+        
+        rslt = []
+        
+        while len(headCommitList) > 0:
+            stream = []
+            commit, childCommit = headCommitList.pop()
+            print commit, "is poped : ", len(headCommitList) 
+            
+            ic = commit
+            #if ic is already exist insert list and quit
+            while True:
+                if ic in rslt:
+                    if childCommit is not None:
+                        idxInsert = rslt.index(childCommit) + 1
+                    else:
+                        idxInsert = 0
+                    rslt = rslt[0:idxInsert] + stream + rslt[idxInsert:]
+                    break
+                else:
+                    stream.append(ic)
+                    
+                    parents = ic.parents
+                    if len(parents) == 0:
+                        break
+                    else:
+                        if len(parents) > 1:
+                            headCommitList.append((parents[1], ic))
+                            print parents[1], "is appended", len(headCommitList) 
+                        ic = ic.parents[0]
+        return rslt
+
+    def convertToDict(self, commit):
+        '''
+        convert a commit to a dict item with keys
+        
+        Params:
+            commit
+            
+        Return:
+            a dict with keys
+                hexsha
+                authored_date
+                summary
+        '''
+        item = {'hexsha': commit.hexsha,
+                'authored_date': commit.authored_date,
+                'summary': commit.summary,
+                'isMerged': False,
+                'mergeInto': None,
+                'mergeFrom': None,
+                'offset': 0,
+                }
+        
+        isMerged = commit.summary[:5] == 'Merge'
+        if isMerged :
+            '''
+            parse summary to get mergeFrom and mergeInto
+            '''
+            parts = commit.summary.split('\'')
+            item['mergeFrom'] = parts[1]
+            
+            if len(parts) == 2 :
+                item['mergeInto'] = 'master'
+            else:
+                item['mergeInto'] = parts[2][6:]
+        
+        return item
+        
+                        
+    def getCommitListModelFromBranch(self, branchName):
+        '''
+        get list of commits come from branchName
+        
+        Params
+        branchName : str
+        
+        Return
+        DictListModel (list of dict)
+            keys:
+                hexsha
+                authored_date
+                summary
+        '''
+        commitList = []
+        headCommit = self.repo.commit(branchName)
+        commitList.append(self.convertToDict(headCommit))
+
+        ic = headCommit
+        while True:
+            if len(ic.parents) is 0:
+                break
+            ic = ic.parents[0]
+            commitList.append(self.convertToDict(ic))
+        
+        return DictListModel(commitList)
+    
+    def getFlowModel(self):
+        flowList = self.getBranchGraphs3()
+        commitInfos = map(lambda x:self.convertToDict(x), flowList)
+        return DictListModel(commitInfos)
+    
+    def getFlowModelWithBranches(self, branches):
+        
+        headCommits = map(lambda x: self.repo.commit(x), branches)
+
+        #Get traversedList and convert it to commitInfos
+        traversedList = self.getBranchGraphs3()
+        commitInfos = map(lambda x:self.convertToDict(x), traversedList)
+
+        self.traversedList = []
+        
+        for i in range(len(headCommits)):
+            print "flow:", branches[i]
+            cf = self.getCommitFlow(headCommits[i])
+                 
+            for ic in cf:
+                idx = traversedList.index(ic)
+                commitInfos[idx]['offset'] = i + 1
+        
+        return DictListModel(commitInfos)
+
+    def getCommitFlow(self, commit):
+        currentFlow = []
+
+        while True :
+            currentFlow.append(commit)
+            self.traversedList.append(commit)
+            parents = commit.parents
+            
+            if len(parents) == 0:
+                #print "branch3:", commit, "- commit terminated"
+                break
+            elif len(parents) == 1:
+                p0 = parents[0]
+                if p0 in self.traversedList:
+                    #print "branch3:", commit, "- return to branch"
+                    break
+                else:
+                    #print "branch3:", commit, "- forward to parents"
+                    commit = p0
+                    continue
+            else: #len(parents) == 2
+                p0 = parents[0]
+                p1 = parents[1]
+                if p0 in self.traversedList:
+                    commit = p1
+                    continue
+                else:
+                    commit = p0
+                    continue
+                
+        for i in currentFlow:
+            print "getCommitFlow", i.hexsha
+                
+        return currentFlow                
+
+
+    
+    def getBranchGraphs3(self):
+        heads = self.repo.heads
+        masterCommit = heads.master.commit
+        
+        self.traversedList = []
+        
+        self.traverseCommit(masterCommit)
+
+        self.traversedList.reverse()
+                
+        return self.traversedList
+       
+    def traverseCommit(self, commit):
+        
+        currentFlow = []
+
+        while True :
+            currentFlow.append(commit)
+            parents = commit.parents
+            
+            if len(parents) == 0:
+                #print "branch3:", commit, "- commit terminated"
+                break
+            else:
+                p0 = parents[0]
+                if p0 in self.traversedList:
+                    #print "branch3:", commit, "- return to branch"
+                    break
+                else:
+                    #print "branch3:", commit, "- forward to parents"
+                    commit = p0
+                    continue
+                
+        currentFlow.reverse()                
+        for commit in currentFlow:
+            if len(commit.parents) == 2:
+                self.traverseCommit(commit.parents[1])            
+            self.traversedList.append(commit)
             
 if __name__ == '__main__' :
     gm = GitModel()
-    gm.connect("/Users/unseon_pro/myworks/gitx")
-    bg = gm.getBranchGraphs()
+    gm.connect("/Users/unseon_pro/myworks/FlowsSample")
+    bg = gm.getBranchGraphs3()
+    for i in bg :
+        print "traversed", i.hexsha

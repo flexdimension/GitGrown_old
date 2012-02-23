@@ -41,6 +41,10 @@ Rectangle {
                                     return 'images/branch.svg'
                                 case 'v':
                                     return 'images/forward_merge.svg'
+                                case '^':
+                                    return 'images/forward_merge.svg'
+                                case '<':
+                                    return 'images/merge_branch.svg'
                                 case '|':
                                 case '*':
                                     return 'images/forward.svg'
@@ -61,7 +65,7 @@ Rectangle {
                     height: (maxFeed(decor) - commitOffset(decor) -1) * 30
                     function maxFeed(d) {
                         for(var i = d.length - 1; i >= 0; i--) {
-                            if("\\/<*".indexOf(d.charAt(i)) != -1)
+                            if("\\/v^*<".indexOf(d.charAt(i)) != -1)
                                 break;
                         }
                         return i
