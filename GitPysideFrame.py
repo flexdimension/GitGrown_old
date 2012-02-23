@@ -86,8 +86,8 @@ class GitPysideFrame(QMainWindow):
         self.commitListModel = self.gm.getCommitListModel('', 'tree')
         self.commitListModel.selectionChanged.connect(self.onSelectedCommitChanged)
         
-        self.branchGraphModel = self.gm.getBranchGraphs()
-        self.commitListModel2 = self.gm.getCommitListModelFromBranch('master')
+        #self.branchGraphModel = self.gm.getBranchGraphs()
+        #self.commitListModel2 = self.gm.getCommitListModelFromBranch('master')
         
         self.flowModel = self.gm.getFlowModelWithBranches(
                                       ['master', 'development'])
@@ -104,7 +104,7 @@ class GitPysideFrame(QMainWindow):
         rootContext.setContextProperty('fileViewModel', self.fileViewModel)
         rootContext.setContextProperty('commitListModel', self.commitListModel)
         #rootContext.setContextProperty('commitListModel2', self.commitListModel2)
-        rootContext.setContextProperty('branchGraphModel', self.branchGraphModel)
+        #rootContext.setContextProperty('branchGraphModel', self.branchGraphModel)
         rootContext.setContextProperty('flowModel', self.flowModel)
         #self.view.setResizeMode(QDeclarativeView.SizeRootObjectToView)
 
