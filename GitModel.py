@@ -20,6 +20,19 @@ class GitModel() :
         self.repo = Repo(path)
         assert self.repo.bare == False
         
+        self.git = Git(path)
+        self.git.init()
+        
+    def getStatus(self):
+        return self.git.status()
+    
+    def executeCommit(self, msg):
+        index = self.repo.index
+        if msg is None or len(msg) == 0:
+            return None
+        new_commit = index.commit(msg)
+        return new_commit
+        
         
     def getConfigs(self):
         rslt = dict()
@@ -185,6 +198,8 @@ class GitModel() :
             for ic in cf:
                 idx = traversedList.index(ic)
                 commitInfos[idx]['offset'] = i + 1
+                
+        commitInfos.reverse()
         
         return DictListModel(commitInfos)
 
@@ -233,7 +248,7 @@ class GitModel() :
         
         self.traverseCommit(masterCommit)
 
-        self.traversedList.reverse()
+        #self.traversedList.reverse()
                 
         return self.traversedList
        
@@ -263,6 +278,7 @@ class GitModel() :
             if len(commit.parents) == 2:
                 self.traverseCommit(commit.parents[1])            
             self.traversedList.append(commit)
+            
             
 if __name__ == '__main__' :
     gm = GitModel()
