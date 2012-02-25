@@ -8,17 +8,43 @@ from git import *
 from PyListModel import PyListModel
 from DictListModel import DictListModel
 from GraphDecorator import GraphDecorator
+from PySide.QtCore import QObject, Slot, Signal
 
 import time
 
-class GitModel() :
+class GitModel(QObject) :
+
+    statusRefreshed = Signal(str)
+
     def __init__(self):
+        super(GitModel, self).__init__(None)
         self.configs = dict();
         self.repo = None
         
     def connect(self, path):
         self.repo = Repo(path)
         assert self.repo.bare == False
+        
+        self.git = Git(path)
+        self.git.init()
+       
+    @Slot()
+    def getStatus(self):
+        print "getStatus is called"
+        return self.git.status()
+    
+    @Slot()
+    def refreshStatus(self):
+        print "Slot refreshStatus called"
+        self.status = self.git.status()
+        self.statusRefreshed.emit(self.status)
+    
+    def executeCommit(self, msg):
+        index = self.repo.index
+        if msg is None or len(msg) == 0:
+            return None
+        new_commit = index.commit(msg)
+        return new_commit
         
         
     def getConfigs(self):
@@ -185,6 +211,8 @@ class GitModel() :
             for ic in cf:
                 idx = traversedList.index(ic)
                 commitInfos[idx]['offset'] = i + 1
+                
+        commitInfos.reverse()
         
         return DictListModel(commitInfos)
 
@@ -233,7 +261,7 @@ class GitModel() :
         
         self.traverseCommit(masterCommit)
 
-        self.traversedList.reverse()
+        #self.traversedList.reverse()
                 
         return self.traversedList
        
@@ -263,6 +291,7 @@ class GitModel() :
             if len(commit.parents) == 2:
                 self.traverseCommit(commit.parents[1])            
             self.traversedList.append(commit)
+            
             
 if __name__ == '__main__' :
     gm = GitModel()
