@@ -55,8 +55,13 @@ class GitPysideFrame(QMainWindow):
             rootContect.setContextProperty('fileViewModel', self.fileViewModel)
             self.blameView.setProperty('currentCommit', sha)
             print "blame model is changed"
-        
-        
+            
+    @Slot()
+    def refreshStatus(self):
+        print 'refreshed!!'
+        self.gm.refreshStatus()
+        rootContext = self.view.rootContext()
+        rootContext.setContextProperty('gitStatus', self.gm.status)
 
     def __init__(self, parent = None) :
         '''
@@ -84,34 +89,40 @@ class GitPysideFrame(QMainWindow):
         
         self.fileViewModel = None
         self.commitListModel = self.gm.getCommitListModel('', 'tree')
-        self.commitListModel.selectionChanged.connect(self.onSelectedCommitChanged)
         
         #self.branchGraphModel = self.gm.getBranchGraphs()
         #self.commitListModel2 = self.gm.getCommitListModelFromBranch('master')
+        
         
         self.flowModel = self.gm.getFlowModelWithBranches(
                                       ['master', 'development'])
         
         # Create an URL to the QML file
         #url = QUrl('view.qml')
-        url = QUrl('BranchFlowView.qml')
+        #url = QUrl('BranchFlowView.qml')
+        url = QUrl('MainView.qml')
+
         # Set the QML file and show
         
         rootContext = self.view.rootContext()
+        
+        #removed because of halt
         #rootContext.setContextProperty('rootFrame', self)
         rootContext.setContextProperty('config', self.configModel)
         rootContext.setContextProperty('fileListModel', self.fileListModel)
         rootContext.setContextProperty('fileViewModel', self.fileViewModel)
         rootContext.setContextProperty('commitListModel', self.commitListModel)
-        #rootContext.setContextProperty('commitListModel2', self.commitListModel2)
-        #rootContext.setContextProperty('branchGraphModel', self.branchGraphModel)
         rootContext.setContextProperty('flowModel', self.flowModel)
-        #self.view.setResizeMode(QDeclarativeView.SizeRootObjectToView)
+        rootContext.setContextProperty('gitModel', self.gm)
 
+        self.refreshStatus()
         
         self.view.setSource(url)
         
         root = self.view.rootObject()
+        
+        self.refreshButton = root.findChild(QObject, "refreshButton")
+        self.refreshButton.clicked.connect(self.refreshStatus)
 
         #self.fileBrowser = root.findChild(QObject, "fileBrowser")
         #self.blameView = root.findChild(QObject, "blameView")
