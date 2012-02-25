@@ -8,11 +8,16 @@ from git import *
 from PyListModel import PyListModel
 from DictListModel import DictListModel
 from GraphDecorator import GraphDecorator
+from PySide.QtCore import QObject, Slot, Signal
 
 import time
 
-class GitModel() :
+class GitModel(QObject) :
+
+    statusRefreshed = Signal(str)
+
     def __init__(self):
+        super(GitModel, self).__init__(None)
         self.configs = dict();
         self.repo = None
         
@@ -22,9 +27,17 @@ class GitModel() :
         
         self.git = Git(path)
         self.git.init()
-        
+       
+    @Slot()
     def getStatus(self):
+        print "getStatus is called"
         return self.git.status()
+    
+    @Slot()
+    def refreshStatus(self):
+        print "Slot refreshStatus called"
+        self.status = self.git.status()
+        self.statusRefreshed.emit(self.status)
     
     def executeCommit(self, msg):
         index = self.repo.index
