@@ -62,6 +62,16 @@ class GitPysideFrame(QMainWindow):
         self.gm.refreshStatus()
         rootContext = self.view.rootContext()
         rootContext.setContextProperty('gitStatus', self.gm.status)
+        rootContext.setContextProperty('indexModel', self.gm.indexModel)
+        
+    @Slot()
+    def commit(self, msg):
+        print msg
+        self.gm.executeCommit(msg)
+        self.refreshStatus()
+        
+        
+        
 
     def __init__(self, parent = None) :
         '''
@@ -78,9 +88,9 @@ class GitPysideFrame(QMainWindow):
         
         self.gm = GitModel()
         #self.gm.connect('/Users/unseon_pro/myworks/RoughSketchpad')
-        #self.gm.connect('.')
+        self.gm.connect('.')
         #self.gm.connect('/Users/unseon_pro/myworks/gitx')
-        self.gm.connect('/Users/unseon_pro/myworks/FlowsSample')
+        #self.gm.connect('/Users/unseon_pro/myworks/FlowsSample')
         
         self.configModel = self.gm.getConfigModel()
         
@@ -114,7 +124,7 @@ class GitPysideFrame(QMainWindow):
         rootContext.setContextProperty('commitListModel', self.commitListModel)
         rootContext.setContextProperty('flowModel', self.flowModel)
         rootContext.setContextProperty('gitModel', self.gm)
-
+        
         self.refreshStatus()
         
         self.view.setSource(url)
@@ -123,6 +133,9 @@ class GitPysideFrame(QMainWindow):
         
         self.refreshButton = root.findChild(QObject, "refreshButton")
         self.refreshButton.clicked.connect(self.refreshStatus)
+
+        self.commitButton = root.findChild(QObject, "commitButton")
+        self.commitButton.commitWithMessage.connect(self.commit)
 
         #self.fileBrowser = root.findChild(QObject, "fileBrowser")
         #self.blameView = root.findChild(QObject, "blameView")

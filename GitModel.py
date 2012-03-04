@@ -28,24 +28,53 @@ class GitModel(QObject) :
         self.git = Git(path)
         self.git.init()
        
-    @Slot()
-    def getStatus(self):
-        print "getStatus is called"
-        return self.git.status()
-    
-    @Slot()
     def refreshStatus(self):
-        print "Slot refreshStatus called"
-        self.status = self.git.status()
+        self.indexModel = self.getIndexModel()
+        self.status = self.git.status()    
+        
         self.statusRefreshed.emit(self.status)
-    
+        
     def executeCommit(self, msg):
         index = self.repo.index
         if msg is None or len(msg) == 0:
+            print 'Message is empty'
             return None
         new_commit = index.commit(msg)
         return new_commit
+    
+    def getIndexStatus(self):
+        fileList = []
         
+        index = self.repo.index
+        
+        idiff = index.diff('HEAD')
+        for d in idiff.iter_change_type('M'):
+            fileList.append({'name': d.b_blob.path, 'type': 'IM'})
+        for d in idiff.iter_change_type('A'):
+            fileList.append({'name': d.b_blob.path, 'type': 'IA'})
+        for d in idiff.iter_change_type('R'):
+            fileList.append({'name': d.b_blob.path, 'type': 'IR'})
+        for d in idiff.iter_change_type('D'):
+            fileList.append({'name': d.a_blob.path, 'type': 'ID'})
+
+        wdiff = index.diff(None)
+        for d in wdiff.iter_change_type('M'):
+            fileList.append({'name': d.b_blob.path, 'type': 'WM'})
+        for d in wdiff.iter_change_type('A'):
+            fileList.append({'name': d.b_blob.path, 'type': 'WA'})
+        for d in wdiff.iter_change_type('R'):
+            fileList.append({'name': d.b_blob.path, 'type': 'WR'})
+        for d in wdiff.iter_change_type('D'):
+            fileList.append({'name': d.a_blob.path, 'type': 'WD'})
+        
+        untracked = self.repo.untracked_files            
+        for u in untracked:
+            fileList.append({'name': u, 'type': 'U'})
+        
+        return fileList
+    
+    def getIndexModel(self):
+        return DictListModel(self.getIndexStatus())
         
     def getConfigs(self):
         rslt = dict()
@@ -295,7 +324,11 @@ class GitModel(QObject) :
             
 if __name__ == '__main__' :
     gm = GitModel()
-    gm.connect("/Users/unseon_pro/myworks/FlowsSample")
-    bg = gm.getBranchGraphs3()
-    for i in bg :
-        print "traversed", i.hexsha
+    #gm.connect("/Users/unseon_pro/myworks/FlowsSample")
+    #bg = gm.getBranchGraphs3()
+    #for i in bg :
+    #    print "traversed", i.hexsha
+    
+    #gm.connect('.')
+    #rslt = gm.getIndexStatus()
+    #for i in rslt: print i
