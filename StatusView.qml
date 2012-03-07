@@ -85,7 +85,7 @@ Rectangle { id: statusView
                     border.color: "black"
 
                     Text {
-                        text: name + ":" + type
+                        text: path + ":" + type
                     }
 
                 }

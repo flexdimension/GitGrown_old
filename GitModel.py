@@ -29,8 +29,8 @@ class GitModel(QObject) :
         self.git.init()
        
     def refreshStatus(self):
-        self.indexModel = self.getIndexModel()
         self.status = self.git.status()    
+        self.indexModel = self.getIndexModel()
         
         self.statusRefreshed.emit(self.status)
         
@@ -43,6 +43,51 @@ class GitModel(QObject) :
         return new_commit
     
     def getIndexStatus(self):
+        fileList = []
+        
+        
+        MODIFIED = '#\tmodified:   '
+        COMMITTED = '# Changes to be committed:'
+        CHANGED = '# Changed but not updated:'
+        UNTRACKED = '# Untracked files:'
+        UNTRACKED_INTENT = '#    '
+        
+        lines = self.status.splitlines()
+
+        type = ''
+        for l in lines:
+            print l
+            
+            if l == COMMITTED :
+                type = 'I'
+            elif l == CHANGED :
+                type = 'W'
+
+            if l.startswith(MODIFIED) :
+                path = l[len(MODIFIED):]
+                fileList.append({'type': type + 'M', 'path': path})
+                continue
+                
+            if l == UNTRACKED :
+                type = 'U'
+            
+                idx = lines.index(l) + 3
+                
+                for ul in lines[idx:] :
+                    if ul.startswith('#'):
+                        path = ul.split('\t')[1]
+                        fileList.append({'type': type, 'path': path})
+                
+                break
+
+            
+        for i in fileList: print i
+            
+        return fileList
+            
+        
+    
+    def getIndexStatus2(self):
         fileList = []
         
         index = self.repo.index
