@@ -273,7 +273,7 @@ class GitModel(QObject) :
         headCommits = map(lambda x: self.repo.commit(x), branches)
 
         #Get traversedList and convert it to commitInfos
-        traversedList = self.getBranchGraphs3()
+        traversedList = self.getBranchGraphs3(branches)
         commitInfos = map(lambda x:self.convertToDict(x), traversedList)
 
         self.traversedList = []
@@ -327,13 +327,15 @@ class GitModel(QObject) :
 
 
     
-    def getBranchGraphs3(self):
-        heads = self.repo.heads
-        masterCommit = heads.master.commit
+    def getBranchGraphs3(self, branches):
+        #heads = self.repo.heads
+        #masterCommit = heads.master.commit
         
         self.traversedList = []
         
-        self.traverseCommit(masterCommit)
+        for b in branches:
+            headCommit = self.repo.commit(b)
+            self.traverseCommit(headCommit)
 
         #self.traversedList.reverse()
                 
