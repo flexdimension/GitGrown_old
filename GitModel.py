@@ -342,6 +342,8 @@ class GitModel(QObject) :
         return self.traversedList
        
     def traverseCommit(self, commit):
+        if commit in self.traversedList:
+            return
         
         currentFlow = []
 
