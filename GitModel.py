@@ -34,6 +34,14 @@ class GitModel(QObject) :
         
         self.statusRefreshed.emit(self.status)
         
+    def stageFile(self, path):
+        index = self.repo.index
+        index.add([path])
+        
+    def unstageFile(self, path):
+        index = self.repo.index
+        index.remove([path])
+        
     def executeCommit(self, msg):
         index = self.repo.index
         if msg is None or len(msg) == 0:
@@ -43,10 +51,11 @@ class GitModel(QObject) :
         return new_commit
     
     def getIndexStatus(self):
-        fileList = []
+        fileIndex = dict()
         
         
         MODIFIED = '#\tmodified:   '
+        NEW_FILE = '#\tnew file:   '
         COMMITTED = '# Changes to be committed:'
         CHANGED = '# Changed but not updated:'
         UNTRACKED = '# Untracked files:'
@@ -58,15 +67,28 @@ class GitModel(QObject) :
         for l in lines:
             print l
             
+            #index
             if l == COMMITTED :
                 type = 'I'
+            #working directory
             elif l == CHANGED :
                 type = 'W'
 
             if l.startswith(MODIFIED) :
                 path = l[len(MODIFIED):]
-                fileList.append({'type': type + 'M', 'path': path})
+                
+                if type == 'I':
+                    fileIndex[path] = 'M'
+                elif type == 'W':
+                    if path in fileIndex.keys():
+                        fileIndex[path] += 'C'
+                    else:
+                        fileIndex[path] = 'C'
                 continue
+            
+            if l.startswith(NEW_FILE) :
+                path = l[len(NEW_FILE):]                
+                fileIndex[path] = 'N'
                 
             if l == UNTRACKED :
                 type = 'U'
@@ -76,11 +98,22 @@ class GitModel(QObject) :
                 for ul in lines[idx:] :
                     if ul.startswith('#'):
                         path = ul.split('\t')[1]
-                        fileList.append({'type': type, 'path': path})
-                
+                        #fileList.append({'type': type, 'path': path})
+                        fileIndex[path] = 'U'
                 break
 
-            
+        fileList = [] 
+        
+        #untracked or new files are appended later
+        for path in fileIndex.keys() :
+            if fileIndex[path] != 'U' and fileIndex[path] != 'N':
+                fileList.append({'type': fileIndex[path], 'path': path})
+        for path in fileIndex.keys() :
+            if fileIndex[path] == 'U' or fileIndex[path] == 'N':
+                fileList.append({'type': fileIndex[path], 'path': path})
+
+
+               
         for i in fileList: print i
             
         return fileList

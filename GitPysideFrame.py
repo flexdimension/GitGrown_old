@@ -66,9 +66,29 @@ class GitPysideFrame(QMainWindow):
         
     @Slot()
     def commit(self, msg):
+        assert msg is not None and msg != ''
+        
         print msg
         self.gm.executeCommit(msg)
         self.refreshStatus()
+        
+    @Slot()
+    def stageFile(self, path):
+        print 'GitPysideFrame: slot stage called: ' + path
+        self.gm.stageFile(path)
+        self.refreshStatus()
+        
+    @Slot()
+    def unstageFile(self, path):
+        print 'GitPysideFrame: slot unstage called'
+        self.gm.unstageFile(path)
+        self.refreshStatus()
+        
+    @Slot()
+    def discard(self, path):
+        print 'GitPysideFrame: slot discard called'
+        self.refreshStatus()
+    
         
         
         
@@ -105,7 +125,7 @@ class GitPysideFrame(QMainWindow):
         
         
         self.flowModel = self.gm.getFlowModelWithBranches(
-                                      ['master', 'development'])
+                                      ['master', 'development', 'feature_command'])
         
         # Create an URL to the QML file
         #url = QUrl('view.qml')
@@ -136,6 +156,10 @@ class GitPysideFrame(QMainWindow):
 
         self.commitButton = root.findChild(QObject, "commitButton")
         self.commitButton.commitWithMessage.connect(self.commit)
+        
+        self.indexStatus = root.findChild(QObject, "indexStatus")
+        self.indexStatus.stageFile.connect(self.stageFile)
+        self.indexStatus.unstageFile.connect(self.unstageFile)
 
         #self.fileBrowser = root.findChild(QObject, "fileBrowser")
         #self.blameView = root.findChild(QObject, "blameView")
