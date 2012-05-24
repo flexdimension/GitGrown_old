@@ -10,6 +10,8 @@ from DictListModel import DictListModel
 from GraphDecorator import GraphDecorator
 from PySide.QtCore import QObject, Slot, Signal
 
+from subprocess import Popen
+
 import time
 
 class GitModel(QObject) :
@@ -36,12 +38,16 @@ class GitModel(QObject) :
         
     def stageFile(self, path):
         index = self.repo.index
-        index.add([path])
+        #index.add([path])
+        
+        self.git.execute(['git', 'add', path])
         
     def unstageFile(self, path):
-        index = self.repo.index
-        index.remove([path])
-        
+        #index = self.repo.index
+        #self.git.reset(['HEAD', path])
+        #self.git.execute(['git', 'reset', 'HEAD', path])
+        Popen(['git', 'reset', 'HEAD', path])
+        #self.git.execute(['git', 'checkout',  '--', path])
     def executeCommit(self, msg):
         index = self.repo.index
         if msg is None or len(msg) == 0:
