@@ -7,13 +7,16 @@ class DictListModel(QAbstractListModel):
     
     def __init__(self, dictList = None, parent = None):
         QAbstractListModel.__init__(self, parent)
-        if dictList is None or len(dictList) == 0:
-            return
         
+        self.items = None
         self.setData(dictList)
         self.selectedValue = None
         self.selectedKey = None
         self.selectedIndex = None
+
+        if dictList is None or len(dictList) == 0:
+            return
+        
         
     def setData(self, dictList):
         self.items = dictList
