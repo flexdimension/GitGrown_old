@@ -69,23 +69,139 @@ Rectangle { id: statusView
             }
         }
 
-        ListView {
+        ListView { id:indexView
             anchors.top: statusConsole.bottom
             width: parent.width
             height: 300
             model: indexModel
             delegate: indexDelegate
 
+            clip: true
+            spacing: 2
+
+            objectName: "indexStatus"
+
+            signal stageFile(string path)
+            signal unstageFile(string path)
+            signal discardFile(string path)
+
+            Rectangle {
+                width: parent.width / 2
+                height: parent.count * 22
+                radius: 10
+                color: "#FFFFAA"
+                border.color: "#AAAA33"
+                border.width: 2
+                z: -10
+            }
+
 
             Component { id: indexDelegate
                 Rectangle {
-                    width: parent.width
+                    x : 10
+                    width: parent.width - 20
                     height: 20
                     border.width: 1
-                    border.color: "black"
+                    border.color: "gray"
+                    color: "transparent"
 
-                    Text {
-                        text: path + ":" + type
+                    Rectangle { id: modifedFileBox
+                        x: 0
+                        width: parent.width / 2
+                        height: 20
+                        //Show only if file is modified and staged
+                        visible: type.indexOf("M") != -1
+                        border.width: 1
+                        radius: 8
+
+
+                        Text {
+                            x:0
+                            text: path + ":" + type
+                            color: "green"
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked : {
+                                console.log('unstage ' + path)
+                                indexView.unstageFile(path)
+                            }
+                        }
+
+                    }
+
+                    Rectangle { id: changedFileBox
+                        x: parent.width / 2
+                        width: parent.width / 2
+                        height: 20
+                        //Show only if the file is changed but not staged
+                        visible: type.indexOf("C") != -1
+                        border.width: 1
+                        radius: 8
+
+                        Text {
+                            x:0
+                            text: path + ":" + type
+                            color: "red"
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked : {
+                                console.log('stage ' + path)
+                                indexView.stageFile(path)
+                            }
+                        }
+                    }
+
+                    Rectangle { id: newFileBox
+                        x: 0
+                        width: parent.width / 2
+                        height: 20
+                        //Show only if file is modified and staged
+                        visible: type.indexOf("N") != -1
+                        color: "#AADDAA"
+                        border.width: 1
+                        radius: 8
+
+                        Text {
+                            x:0
+                            text: path + ":" + type
+                            color: "green"
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked : {
+                                console.log('unstage ' + path)
+                                indexView.unstageFile(path)
+                            }
+                        }
+                    }
+
+
+
+                    Rectangle { id: untrackedFileBox
+                        x: parent.width / 2
+                        width: parent.width / 2
+                        height: 20
+                        //Show only if the file is untracked
+                        visible: type.indexOf("U") != -1
+                        color: "#DDAAAA"
+                        border.width: 1
+                        radius: 8
+
+                        Text {
+                            x:0
+                            text: path + ":" + type
+                            color: "red"
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked : {
+                                console.log('stage ' + path)
+                                indexView.stageFile(path)
+                            }
+                        }
                     }
 
                 }
