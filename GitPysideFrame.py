@@ -21,14 +21,14 @@ class GitPysideFrame(QMainWindow):
     def onSelectedPathChanged(self, index) :
         print "onSelectedPathChanged is called"
         filePath = self.fileListModel.selectedValue
-        obj = self.gm.getFileList()[index]
+        obj = self.gitModel.getFileList()[index]
         
         if obj['type'] == 'blob' :
-            self.fileViewModel = self.gm.getBlamedModel('HEAD', filePath)
-            self.commitListModel = self.gm.getCommitListModel(filePath)
+            self.fileViewModel = self.gitModel.getBlamedModel('HEAD', filePath)
+            self.commitListModel = self.gitModel.getCommitListModel(filePath)
         elif obj['type'] ==  'tree':
             self.fileViewModel = None
-            self.commitListModel = self.gm.getCommitListModel(filePath, 'dir')
+            self.commitListModel = self.gitModel.getCommitListModel(filePath, 'dir')
         else :
             pass #error!!!!!
             
@@ -48,9 +48,9 @@ class GitPysideFrame(QMainWindow):
         sha = self.commitListModel.selectedValue
         filePath = self.fileListModel.selectedValue
         fileIndex = self.fileListModel.selectedIndex
-        obj = self.gm.getFileList()[fileIndex]
+        obj = self.gitModel.getFileList()[fileIndex]
         if obj['type'] == 'blob' :
-            self.fileViewModel = self.gm.getBlamedModel(sha, filePath)
+            self.fileViewModel = self.gitModel.getBlamedModel(sha, filePath)
             rootContect = self.view.rootContext()
             rootContect.setContextProperty('fileViewModel', self.fileViewModel)
             self.blameView.setProperty('currentCommit', sha)
@@ -59,29 +59,29 @@ class GitPysideFrame(QMainWindow):
     @Slot()
     def refreshStatus(self):
         print 'refreshed!!'
-        self.gm.refreshStatus()
+        self.gitModel.refreshStatus()
         rootContext = self.view.rootContext()
-        rootContext.setContextProperty('gitStatus', self.gm.status)
-        rootContext.setContextProperty('indexModel', self.gm.indexModel)
+        rootContext.setContextProperty('gitStatus', self.gitModel.status)
+        rootContext.setContextProperty('indexModel', self.gitModel.indexModel)
         
     @Slot()
     def commit(self, msg):
         assert msg is not None and msg != ''
         
         print msg
-        self.gm.executeCommit(msg)
+        self.gitModel.executeCommit(msg)
         self.refreshStatus()
         
     @Slot()
     def stageFile(self, path):
         print 'GitPysideFrame: slot stage called: ' + path
-        self.gm.stageFile(path)
+        self.gitModel.stageFile(path)
         self.refreshStatus()
         
     @Slot()
     def unstageFile(self, path):
         print 'GitPysideFrame: slot unstage called'
-        self.gm.unstageFile(path)
+        self.gitModel.unstageFile(path)
         self.refreshStatus()
         
     @Slot()
@@ -106,25 +106,25 @@ class GitPysideFrame(QMainWindow):
         layout.addWidget(self.view)
         self.setLayout(layout)
         
-        self.gm = GitModel()
-        #self.gm.connect('/Users/unseon_pro/myworks/RoughSketchpad')
-        self.gm.connect('.')
-        #self.gm.connect('/Users/unseon_pro/myworks/gitx')
-        #self.gm.connect('/Users/unseon_pro/myworks/FlowsSample')
+        self.gitModel = GitModel()
+        #self.gitModel.connect('/Users/unseon_pro/myworks/RoughSketchpad')
+        self.gitModel.connect('.')
+        #self.gitModel.connect('/Users/unseon_pro/myworks/gitx')
+        #self.gitModel.connect('/Users/unseon_pro/myworks/FlowsSample')
         
-        self.configModel = self.gm.getConfigModel()
+        self.configModel = self.gitModel.getConfigModel()
         
-        self.fileListModel = self.gm.getFileListModel()
+        self.fileListModel = self.gitModel.getFileListModel()
         self.fileListModel.selectionChanged.connect(self.onSelectedPathChanged)
         
         self.fileViewModel = None
-        self.commitListModel = self.gm.getCommitListModel('', 'tree')
+        self.commitListModel = self.gitModel.getCommitListModel('', 'tree')
         
-        #self.branchGraphModel = self.gm.getBranchGraphs()
-        #self.commitListModel2 = self.gm.getCommitListModelFromBranch('master')
+        #self.branchGraphModel = self.gitModel.getBranchGraphs()
+        #self.commitListModel2 = self.gitModel.getCommitListModelFromBranch('master')
         
         
-        self.flowModel = self.gm.getFlowModelWithBranches(
+        self.flowModel = self.gitModel.getFlowModelWithBranches(
                                       ['master', 'development', 'feature_command'])
         
         # Create an URL to the QML file
@@ -143,7 +143,7 @@ class GitPysideFrame(QMainWindow):
         rootContext.setContextProperty('fileViewModel', self.fileViewModel)
         rootContext.setContextProperty('commitListModel', self.commitListModel)
         rootContext.setContextProperty('flowModel', self.flowModel)
-        rootContext.setContextProperty('gitModel', self.gm)
+        rootContext.setContextProperty('gitModel', self.gitModel)
         
         self.refreshStatus()
         
