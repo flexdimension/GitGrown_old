@@ -29,6 +29,9 @@ class GitModel(QObject) :
         
         self.git = Git(path)
         self.git.init()
+        
+    def run(self, cmd):
+        Popen(cmd)
        
     def refreshStatus(self):
         self.status = self.git.status()    
@@ -40,22 +43,20 @@ class GitModel(QObject) :
         index = self.repo.index
         #index.add([path])
         
-        self.git.execute(['git', 'add', path])
+        self.run(['git', 'add', path])
         
     def unstageFile(self, path):
-        #index = self.repo.index
-        #self.git.reset(['HEAD', path])
-        #self.git.execute(['git', 'reset', 'HEAD', path])
-        Popen(['git', 'reset', 'HEAD', path])
-        #self.git.execute(['git', 'checkout',  '--', path])
+        self.run(['git', 'reset', 'HEAD', path])
+
     def executeCommit(self, msg):
-        index = self.repo.index
+        #index = self.repo.index
         if msg is None or len(msg) == 0:
             print 'Message is empty'
             return None
-        new_commit = index.commit(msg)
-        return new_commit
-    
+        #new_commit = index.commit(msg)
+        #return new_commit
+        self.run(['git', 'commit', '-m', msg])
+
     def getIndexStatus(self):
         fileIndex = dict()
         
