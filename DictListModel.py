@@ -8,14 +8,15 @@ class DictListModel(QAbstractListModel):
     def __init__(self, dictList = None, parent = None):
         QAbstractListModel.__init__(self, parent)
         
-        self.items = None
-        self.setData(dictList)
+        self.items = None        
         self.selectedValue = None
         self.selectedKey = None
         self.selectedIndex = None
 
         if dictList is None or len(dictList) == 0:
             return
+
+        self.setData(dictList)
         
         
     def setData(self, dictList):
