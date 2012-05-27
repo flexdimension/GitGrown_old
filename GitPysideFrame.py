@@ -63,12 +63,18 @@ class GitPysideFrame(QMainWindow):
         rootContext = self.view.rootContext()
         rootContext.setContextProperty('gitStatus', self.gitModel.status)
         rootContext.setContextProperty('indexModel', self.gitModel.indexModel)
-        
+        self.flowModel = self.gitModel.getFlowModelWithBranches(
+                                      ['master',
+                                       'development',
+                                       'feature_command',
+                                       'feature_ui'])
+        rootContext.setContextProperty('flowModel', self.flowModel)
+                
     @Slot()
     def commit(self, msg):
         assert msg is not None and msg != ''
         
-        print msg
+        print "GitPysideFrame : " + msg
         self.gitModel.executeCommit(msg)
         self.refreshStatus()
         

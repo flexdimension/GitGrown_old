@@ -54,7 +54,9 @@ class GitModel(QObject) :
             print 'Message is empty'
             return -1
 
-        return self.run(['git', 'commit', '-m', msg])
+        rslt = self.run(['git', 'commit', '-m', msg])
+                    
+        return rslt
 
     def getIndexStatus(self):
         fileIndex = dict()
