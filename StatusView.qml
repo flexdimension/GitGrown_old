@@ -47,9 +47,9 @@ Rectangle { id: statusView
 
             Rectangle {
                 width: parent.width
-                height: 30
+                height: 60
                 border.color: "black"
-                TextInput { id: textCommit
+                TextEdit { id: textCommit
                     anchors.fill: parent
                     anchors.margins: 3
                 }

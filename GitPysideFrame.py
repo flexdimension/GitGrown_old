@@ -125,7 +125,10 @@ class GitPysideFrame(QMainWindow):
         
         
         self.flowModel = self.gitModel.getFlowModelWithBranches(
-                                      ['master', 'development', 'feature_command'])
+                                      ['master',
+                                       'development',
+                                       'feature_command',
+                                       'feature_ui'])
         
         # Create an URL to the QML file
         #url = QUrl('view.qml')
