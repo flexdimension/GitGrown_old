@@ -75,8 +75,13 @@ class GitPysideFrame(QMainWindow):
         assert msg is not None and msg != ''
         
         print "GitPysideFrame : " + msg
-        self.gitModel.executeCommit(msg)
+        rslt = self.gitModel.executeCommit(msg)
+        
+        if rslt != 0:
+            pass
+        
         self.refreshStatus()
+        self.commitMessage.text = ""
         
     @Slot()
     def stageFile(self, path):
@@ -169,6 +174,9 @@ class GitPysideFrame(QMainWindow):
         self.indexStatus = root.findChild(QObject, "indexStatus")
         self.indexStatus.stageFile.connect(self.stageFile)
         self.indexStatus.unstageFile.connect(self.unstageFile)
+        
+        self.commitMessage = root.findChild(QObject, "commitMessage")
+        self.commitMessage.text = "test"
 
         #self.fileBrowser = root.findChild(QObject, "fileBrowser")
         #self.blameView = root.findChild(QObject, "blameView")

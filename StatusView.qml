@@ -40,7 +40,7 @@ Rectangle { id: statusView
                 signal commitWithMessage(string msg)
 
                 onClicked : {
-                    commitWithMessage(textCommit.text)
+                    commitWithMessage(commitMessage.text)
                     console.log("commit push button clicked!!")
                 }
             }
@@ -49,7 +49,8 @@ Rectangle { id: statusView
                 width: parent.width
                 height: 60
                 border.color: "black"
-                TextEdit { id: textCommit
+                TextEdit { id: commitMessage
+                    objectName: "commitMessage"
                     anchors.fill: parent
                     anchors.margins: 3
                 }
