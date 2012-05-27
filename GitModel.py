@@ -4,7 +4,7 @@ Created on 2011/12/04
 @author: unseon_pro
 '''
 
-from git import *
+from git import Git, Repo
 from PyListModel import PyListModel
 from DictListModel import DictListModel
 from GraphDecorator import GraphDecorator
@@ -31,7 +31,11 @@ class GitModel(QObject) :
         self.git.init()
         
     def run(self, cmd):
-        Popen(cmd)
+        print "run " + str(cmd)
+        process = Popen(cmd)
+        process.wait()
+        print "returncode is " + str(process.returncode)
+        return process.returncode
        
     def refreshStatus(self):
         self.status = self.git.status()    
@@ -40,26 +44,20 @@ class GitModel(QObject) :
         self.statusRefreshed.emit(self.status)
         
     def stageFile(self, path):
-        index = self.repo.index
-        #index.add([path])
-        
-        self.run(['git', 'add', path])
+        return self.run(['git', 'add', path])
         
     def unstageFile(self, path):
-        self.run(['git', 'reset', 'HEAD', path])
+        return self.run(['git', 'reset', 'HEAD', path])
 
     def executeCommit(self, msg):
-        #index = self.repo.index
         if msg is None or len(msg) == 0:
             print 'Message is empty'
-            return None
-        #new_commit = index.commit(msg)
-        #return new_commit
-        self.run(['git', 'commit', '-m', msg])
+            return -1
+
+        return self.run(['git', 'commit', '-m', msg])
 
     def getIndexStatus(self):
         fileIndex = dict()
-        
         
         MODIFIED = '#\tmodified:   '
         NEW_FILE = '#\tnew file:   '
@@ -118,44 +116,9 @@ class GitModel(QObject) :
         for path in fileIndex.keys() :
             if fileIndex[path] == 'U' or fileIndex[path] == 'N':
                 fileList.append({'type': fileIndex[path], 'path': path})
-
-
                
         for i in fileList: print i
             
-        return fileList
-            
-        
-    
-    def getIndexStatus2(self):
-        fileList = []
-        
-        index = self.repo.index
-        
-        idiff = index.diff('HEAD')
-        for d in idiff.iter_change_type('M'):
-            fileList.append({'name': d.b_blob.path, 'type': 'IM'})
-        for d in idiff.iter_change_type('A'):
-            fileList.append({'name': d.b_blob.path, 'type': 'IA'})
-        for d in idiff.iter_change_type('R'):
-            fileList.append({'name': d.b_blob.path, 'type': 'IR'})
-        for d in idiff.iter_change_type('D'):
-            fileList.append({'name': d.a_blob.path, 'type': 'ID'})
-
-        wdiff = index.diff(None)
-        for d in wdiff.iter_change_type('M'):
-            fileList.append({'name': d.b_blob.path, 'type': 'WM'})
-        for d in wdiff.iter_change_type('A'):
-            fileList.append({'name': d.b_blob.path, 'type': 'WA'})
-        for d in wdiff.iter_change_type('R'):
-            fileList.append({'name': d.b_blob.path, 'type': 'WR'})
-        for d in wdiff.iter_change_type('D'):
-            fileList.append({'name': d.a_blob.path, 'type': 'WD'})
-        
-        untracked = self.repo.untracked_files            
-        for u in untracked:
-            fileList.append({'name': u, 'type': 'U'})
-        
         return fileList
     
     def getIndexModel(self):
