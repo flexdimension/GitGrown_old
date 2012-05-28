@@ -55,7 +55,8 @@ Rectangle {
 */
                     Text { id: summaryText
                         anchors.left: parent.right
-                        text: summary.substring(0, 5) == 'Merge' ? summary : ''
+                        //text: summary.substring(0, 5) == 'Merge' ? summary : ''
+                        text: summary
                         font.pixelSize: 9
                         font.family:"Courier"
                         //rotation: 30

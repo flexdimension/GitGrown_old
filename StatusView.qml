@@ -11,6 +11,8 @@ Rectangle { id: statusView
         anchors.margins: 10
         clip: true
 
+        width: parent.width
+
         Column { id: statusController
             width: parent.width
 
@@ -27,7 +29,17 @@ Rectangle { id: statusView
                 text: "Refresh"
                 objectName: "refreshButton"
                 onClicked : {
-                    console.log("refresh push button clicked!!")
+                    console.log("StatusView:" + "refresh push button clicked!!")
+                }
+            }
+
+            PushButton {
+                width: 80
+                height: 30
+                text: "Undo Commit"
+                objectName: "undoCommit"
+                onClicked : {
+                    console.log("StatusView:" + "Undo Commit push button clicked!!")
                 }
             }
 
@@ -40,18 +52,28 @@ Rectangle { id: statusView
                 signal commitWithMessage(string msg)
 
                 onClicked : {
-                    commitWithMessage(textCommit.text)
-                    console.log("commit push button clicked!!")
+                    commitWithMessage(commitMessage.text)
+                    console.log("StatusView:" + "commit push button clicked!!")
                 }
             }
 
             Rectangle {
                 width: parent.width
-                height: 30
+                height: 60
                 border.color: "black"
-                TextInput { id: textCommit
+                TextEdit { id: commitMessage
+                    objectName: "commitMessage"
                     anchors.fill: parent
                     anchors.margins: 3
+                    wrapMode: TextEdit.Wrap
+
+                    Component.onCompleted: {
+                        root.commited.connect(clear)
+                    }
+
+                    function clear() {
+                        text = ""
+                    }
                 }
             }
         }
@@ -110,7 +132,7 @@ Rectangle { id: statusView
                         width: parent.width / 2
                         height: 20
                         //Show only if file is modified and staged
-                        visible: type.indexOf("M") != -1
+                        visible: type.indexOf("M") != -1 || type.indexOf("R") != -1
                         border.width: 1
                         radius: 8
 
