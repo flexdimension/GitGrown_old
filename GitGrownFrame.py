@@ -12,7 +12,7 @@ from PyListModel import PyListModel
 from DictListModel import DictListModel
 from GitModel import GitModel
 
-class GitPysideFrame(QMainWindow):
+class GitGrownFrame(QMainWindow):
     '''
     classdocs
     '''
@@ -74,7 +74,7 @@ class GitPysideFrame(QMainWindow):
     def commit(self, msg):
         assert msg is not None and msg != ''
         
-        print "GitPysideFrame : " + msg
+        print "GitGrownFrame : " + msg
         rslt = self.gitModel.executeCommit(msg)
         
         if rslt != 0:
@@ -85,19 +85,19 @@ class GitPysideFrame(QMainWindow):
         
     @Slot()
     def stageFile(self, path):
-        print 'GitPysideFrame: slot stage called: ' + path
+        print 'GitGrownFrame: slot stage called: ' + path
         self.gitModel.stageFile(path)
         self.refreshStatus()
         
     @Slot()
     def unstageFile(self, path):
-        print 'GitPysideFrame: slot unstage called'
+        print 'GitGrownFrame: slot unstage called'
         self.gitModel.unstageFile(path)
         self.refreshStatus()
         
     @Slot()
     def discard(self, path):
-        print 'GitPysideFrame: slot discard called'
+        print 'GitGrownFrame: slot discard called'
         self.refreshStatus()
     
         
@@ -108,7 +108,7 @@ class GitPysideFrame(QMainWindow):
         '''
         Constructor
         '''
-        super(GitPysideFrame, self).__init__(parent)
+        super(GitGrownFrame, self).__init__(parent)
         
         layout = QVBoxLayout()
         
