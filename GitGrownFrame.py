@@ -177,7 +177,7 @@ class GitGrownFrame(QMainWindow):
         
         self.commitMessage = root.findChild(QObject, "commitMessage")
         self.commitMessage.text = "test"
-
+        
         #self.fileBrowser = root.findChild(QObject, "fileBrowser")
         #self.blameView = root.findChild(QObject, "blameView")
         #self.commitListView = root.findChild(QObject, "commitListView")

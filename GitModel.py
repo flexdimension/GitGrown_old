@@ -55,13 +55,14 @@ class GitModel(QObject) :
             return -1
 
         rslt = self.run(['git', 'commit', '-m', msg])
-                    
+
         return rslt
 
     def getIndexStatus(self):
         fileIndex = dict()
         
         MODIFIED = '#\tmodified:   '
+        RENAMED = '#\trenamed:    '
         NEW_FILE = '#\tnew file:   '
         COMMITTED = '# Changes to be committed:'
         CHANGED = '# Changed but not updated:'
@@ -77,6 +78,7 @@ class GitModel(QObject) :
             #index
             if l == COMMITTED :
                 type = 'I'
+                
             #working directory
             elif l == CHANGED :
                 type = 'W'
@@ -93,9 +95,13 @@ class GitModel(QObject) :
                         fileIndex[path] = 'C'
                 continue
             
+            if l.startswith(RENAMED) :
+                path = l[len(RENAMED):].split(' ')[2]               
+                fileIndex[path] = 'R'
+            
             if l.startswith(NEW_FILE) :
                 path = l[len(NEW_FILE):]                
-                fileIndex[path] = 'N'
+                fileIndex[path] = 'N'                
                 
             if l == UNTRACKED :
                 type = 'U'

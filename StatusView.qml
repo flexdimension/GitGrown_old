@@ -121,7 +121,7 @@ Rectangle { id: statusView
                         width: parent.width / 2
                         height: 20
                         //Show only if file is modified and staged
-                        visible: type.indexOf("M") != -1
+                        visible: type.indexOf("M") != -1 || type.indexOf("R") != -1
                         border.width: 1
                         radius: 8
 
