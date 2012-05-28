@@ -98,6 +98,20 @@ class GitGrownFrame(QMainWindow):
         self.refreshStatus()
         
     @Slot()
+    def undoRecentCommit(self):
+        self.refreshStatus()
+        if not self.gitModel.isIndexClear():
+            print "GitGrownFrame: Undo Commit is not able " + \
+                    "since index is not cleared"
+        #get recent commit's message for restore to TextEdit
+        headCommit = self.gitModel.getCommitInfo()
+        print headCommit['summary']
+        #undo
+        self.gitModel.undoRecentCommit()        
+        self.refreshStatus()
+        self.root.commitUndone.emit(headCommit['summary'])
+        
+    @Slot()
     def discard(self, path):
         print 'GitGrownFrame: slot discard called'
         self.refreshStatus()
@@ -174,6 +188,9 @@ class GitGrownFrame(QMainWindow):
         self.commitButton = self.root.findChild(QObject, "commitButton")
         self.commitButton.commitWithMessage.connect(self.commit)
         
+        self.undoCommitButton = self.root.findChild(QObject, "undoCommitButton")
+        self.undoCommitButton.undoCommit.connect(self.undoRecentCommit)
+        
         self.indexStatus = self.root.findChild(QObject, "indexStatus")
         self.indexStatus.stageFile.connect(self.stageFile)
         self.indexStatus.unstageFile.connect(self.unstageFile)
@@ -185,5 +202,4 @@ class GitGrownFrame(QMainWindow):
         
         self.selectedPath = '.'
         self.selectedCommit = None
-
         

@@ -57,6 +57,10 @@ class GitModel(QObject) :
         rslt = self.run(['git', 'commit', '-m', msg])
 
         return rslt
+    
+    def undoRecentCommit(self):
+        rslt = self.run(['git', 'reset', '--soft', 'HEAD^'])        
+        return rslt
 
     def getIndexStatus(self):
         fileIndex = dict()
@@ -69,8 +73,9 @@ class GitModel(QObject) :
         UNTRACKED = '# Untracked files:'
         UNTRACKED_INTENT = '#    '
         
-        lines = self.status.splitlines()
 
+        self.isIdxClear = True
+        lines = self.status.splitlines()
         type = ''
         for l in lines:
             print l
@@ -78,6 +83,7 @@ class GitModel(QObject) :
             #index
             if l == COMMITTED :
                 type = 'I'
+                self.isIdxClear = False
                 
             #working directory
             elif l == CHANGED :
@@ -128,6 +134,9 @@ class GitModel(QObject) :
         for i in fileList: print i
             
         return fileList
+    
+    def isIndexClear(self):
+        return self.isIdxClear        
     
     def getIndexModel(self):
         return DictListModel(self.getIndexStatus())
@@ -183,8 +192,8 @@ class GitModel(QObject) :
         
         return rslt
     
-    def getCommitInfo(self, hexsha):
-        return None
+    def getCommitInfo(self, hexsha = ''):
+        return self.convertToDict(self.repo.commit())
     
     def getFileListModel(self):
         return DictListModel(self.getFileList())

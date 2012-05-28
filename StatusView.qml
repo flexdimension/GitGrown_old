@@ -37,8 +37,11 @@ Rectangle { id: statusView
                 width: 80
                 height: 30
                 text: "Undo Commit"
-                objectName: "undoCommit"
+                objectName: "undoCommitButton"
+
+                signal undoCommit
                 onClicked : {
+                    undoCommit()
                     console.log("StatusView:" + "Undo Commit push button clicked!!")
                 }
             }
@@ -69,10 +72,15 @@ Rectangle { id: statusView
 
                     Component.onCompleted: {
                         root.commited.connect(clear)
+                        root.commitUndone.connect(setMessage)
                     }
 
                     function clear() {
                         text = ""
+                    }
+
+                    function setMessage(msg) {
+                        text = msg
                     }
                 }
             }
