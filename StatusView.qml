@@ -27,7 +27,17 @@ Rectangle { id: statusView
                 text: "Refresh"
                 objectName: "refreshButton"
                 onClicked : {
-                    console.log("refresh push button clicked!!")
+                    console.log("StatusView:" + "refresh push button clicked!!")
+                }
+            }
+
+            PushButton {
+                width: 80
+                height: 30
+                text: "Undo Commit"
+                objectName: "undoCommit"
+                onClicked : {
+                    console.log("StatusView:" + "Undo Commit push button clicked!!")
                 }
             }
 
@@ -41,7 +51,7 @@ Rectangle { id: statusView
 
                 onClicked : {
                     commitWithMessage(commitMessage.text)
-                    console.log("commit push button clicked!!")
+                    console.log("StatusView:" + "commit push button clicked!!")
                 }
             }
 
