@@ -11,6 +11,8 @@ Rectangle { id: statusView
         anchors.margins: 10
         clip: true
 
+        width: parent.width
+
         Column { id: statusController
             width: parent.width
 
@@ -63,6 +65,7 @@ Rectangle { id: statusView
                     objectName: "commitMessage"
                     anchors.fill: parent
                     anchors.margins: 3
+                    wrapMode: TextEdit.Wrap
 
                     Component.onCompleted: {
                         root.commited.connect(clear)
