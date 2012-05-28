@@ -81,7 +81,9 @@ class GitGrownFrame(QMainWindow):
             pass
         
         self.refreshStatus()
-        self.commitMessage.text = ""
+        
+        #emit commited signal
+        self.root.commited.emit()
         
     @Slot()
     def stageFile(self, path):
@@ -158,25 +160,24 @@ class GitGrownFrame(QMainWindow):
         rootContext.setContextProperty('commitListModel', self.commitListModel)
         rootContext.setContextProperty('flowModel', self.flowModel)
         rootContext.setContextProperty('gitModel', self.gitModel)
+
         
         self.refreshStatus()
         
         self.view.setSource(url)
         
-        root = self.view.rootObject()
+        self.root = self.view.rootObject() #
         
-        self.refreshButton = root.findChild(QObject, "refreshButton")
+        self.refreshButton = self.root.findChild(QObject, "refreshButton")
         self.refreshButton.clicked.connect(self.refreshStatus)
 
-        self.commitButton = root.findChild(QObject, "commitButton")
+        self.commitButton = self.root.findChild(QObject, "commitButton")
         self.commitButton.commitWithMessage.connect(self.commit)
         
-        self.indexStatus = root.findChild(QObject, "indexStatus")
+        self.indexStatus = self.root.findChild(QObject, "indexStatus")
         self.indexStatus.stageFile.connect(self.stageFile)
         self.indexStatus.unstageFile.connect(self.unstageFile)
-        
-        self.commitMessage = root.findChild(QObject, "commitMessage")
-        self.commitMessage.text = "test"
+                
         
         #self.fileBrowser = root.findChild(QObject, "fileBrowser")
         #self.blameView = root.findChild(QObject, "blameView")

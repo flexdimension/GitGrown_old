@@ -63,6 +63,14 @@ Rectangle { id: statusView
                     objectName: "commitMessage"
                     anchors.fill: parent
                     anchors.margins: 3
+
+                    Component.onCompleted: {
+                        root.commited.connect(clear)
+                    }
+
+                    function clear() {
+                        text = ""
+                    }
                 }
             }
         }

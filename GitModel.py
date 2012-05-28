@@ -331,8 +331,8 @@ class GitModel(QObject) :
                     commit = p0
                     continue
                 
-        for i in currentFlow:
-            print "getCommitFlow", i.hexsha
+        #for i in currentFlow:
+            #print "getCommitFlow", i.hexsha
                 
         return currentFlow                
 
