@@ -7,6 +7,7 @@ Rectangle { id: root
     height: 600
 
     signal commited
+    signal commitUndone(string msg)
 
     BranchFlowView { id: bfView
         x:0
