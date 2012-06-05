@@ -4,7 +4,7 @@ Rectangle { id: root
     objectName: "root"
 
     width: 1000
-    height: 600
+    height: 800
 
     signal commited
     signal commitUndone(string msg)
@@ -16,5 +16,12 @@ Rectangle { id: root
 
     StatusView{
         anchors.left: bfView.right
+    }
+
+    ConsoleView {
+        x: 0
+        anchors.top: bfView.bottom
+        width: parent.width
+        height: 200
     }
 }

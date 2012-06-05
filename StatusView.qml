@@ -246,18 +246,6 @@ Rectangle { id: statusView
                 }
             }
 
-
-            Rectangle { id: statusConsole
-                width: parent.width
-                height: 200
-                border.color:"gray"
-
-
-                Text {
-                    id: statusText
-                    text: gitStatus
-                }
-            }
         }
     }
 
