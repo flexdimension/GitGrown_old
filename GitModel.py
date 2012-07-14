@@ -345,6 +345,15 @@ class GitModel(QObject) :
                 
         return currentFlow                
 
+    def getBranchListModel(self):
+        dictlist = []
+        branches = self.repo.heads
+        
+        for i in branches:
+            dictlist.append({'name':i.name})
+            
+        return DictListModel(dictlist)
+        
 
     
     def getBranchGraphs3(self, branches):
