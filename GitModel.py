@@ -69,7 +69,8 @@ class GitModel(QObject) :
         RENAMED = '#\trenamed:    '
         NEW_FILE = '#\tnew file:   '
         COMMITTED = '# Changes to be committed:'
-        CHANGED = '# Changed but not updated:'
+        #CHANGED = '# Changed but not updated:'
+        CHANGED = '# Changes not staged for commit:'
         UNTRACKED = '# Untracked files:'
         UNTRACKED_INTENT = '#    '
         
@@ -130,7 +131,8 @@ class GitModel(QObject) :
         for path in fileIndex.keys() :
             if fileIndex[path] == 'U' or fileIndex[path] == 'N':
                 fileList.append({'type': fileIndex[path], 'path': path})
-               
+        
+        print "index"       
         for i in fileList: print i
             
         return fileList
