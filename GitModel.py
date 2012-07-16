@@ -345,14 +345,19 @@ class GitModel(QObject) :
         #for i in currentFlow:
             #print "getCommitFlow", i.hexsha
                 
-        return currentFlow                
+        return currentFlow
+    
+    
+    def updateBranchList(self):
+        pass
 
     def getBranchListModel(self):
         dictlist = []
         branches = self.repo.heads
         
         for i in branches:
-            dictlist.append({'name':i.name})
+            dictlist.append({'name':i.name, 'offset' : 0})
+
             
         return DictListModel(dictlist)
         

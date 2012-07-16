@@ -28,7 +28,7 @@ Rectangle {
                     height: 20
                     color: "#AABBCC"
                     Text {
-                        text: name
+                        text: name + " " + offset.toString(10)
                     }
 
                     MouseArea {
@@ -37,10 +37,15 @@ Rectangle {
                         drag.axis: Drag.XAxis
                         drag.minimumX: 0
                         drag.maximumX: 300
+
+                        onReleased : {
+                            console.log('ended' + content.x + " "  + content.y);
+                            var position = Math.floor((content.x + 25) / 50);
+                            content.x = position * 50;
+                            //model.offset = position;
+                        }
                     }
                 }
-
-
             }
 
             ListView {
