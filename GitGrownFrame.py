@@ -157,6 +157,8 @@ class GitGrownFrame(QMainWindow):
                                        'feature_command',
                                        'feature_ui'])
         
+        self.branchListModel = self.gitModel.getBranchListModel()
+        
         # Create an URL to the QML file
         #url = QUrl('view.qml')
         #url = QUrl('BranchFlowView.qml')
@@ -174,6 +176,7 @@ class GitGrownFrame(QMainWindow):
         rootContext.setContextProperty('commitListModel', self.commitListModel)
         rootContext.setContextProperty('flowModel', self.flowModel)
         rootContext.setContextProperty('gitModel', self.gitModel)
+        rootContext.setContextProperty('branchListModel', self.branchListModel)
 
         
         self.refreshStatus()
@@ -194,6 +197,7 @@ class GitGrownFrame(QMainWindow):
         self.indexStatus = self.root.findChild(QObject, "indexStatus")
         self.indexStatus.stageFile.connect(self.stageFile)
         self.indexStatus.unstageFile.connect(self.unstageFile)
+        
                 
         
         #self.fileBrowser = root.findChild(QObject, "fileBrowser")
