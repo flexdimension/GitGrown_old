@@ -9,5 +9,7 @@
 </pydev_pathproperty>
 <pydev_pathproperty name="org.python.pydev.PROJECT_EXTERNAL_SOURCE_PATH">
 <path>/Users/unseon_pro/myworks/GitPython</path>
+<path>/Library/Python/2.7/site-packages/PySide</path>
+<path>/Users/unseon_pro/myworks/GitPython</path>
 </pydev_pathproperty>
 </pydev_project>
