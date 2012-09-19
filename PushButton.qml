@@ -1,10 +1,12 @@
 import Qt 4.7
 
-Rectangle {
+Rectangle { id: pushButton
     width: 100
     height: 50
 
     property alias text: label.text
+
+    signal clicked()
 
     Image {
         anchors.fill: parent
@@ -17,4 +19,8 @@ Rectangle {
         color: "white"
     }
 
+    MouseArea { id: mouseArea
+        anchors.fill: parent
+        onClicked: pushButton.clicked()
+    }
 }

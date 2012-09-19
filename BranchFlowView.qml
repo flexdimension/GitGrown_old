@@ -8,8 +8,18 @@ Rectangle {
 
     property alias currentIndex: listView.currentIndex
 
+    BranchListView {
+        x: 0
+        y: 0
+        width: parent.width
+        height: 200
+    }
+
     Rectangle {
-        anchors.fill: parent
+        x: 0
+        y: 200
+        width: parent.width
+        height: 400
         anchors.margins: 10
         clip: true
 
@@ -55,7 +65,8 @@ Rectangle {
 */
                     Text { id: summaryText
                         anchors.left: parent.right
-                        text: summary.substring(0, 5) == 'Merge' ? summary : ''
+                        //text: summary.substring(0, 5) == 'Merge' ? summary : ''
+                        text: summary
                         font.pixelSize: 9
                         font.family:"Courier"
                         //rotation: 30

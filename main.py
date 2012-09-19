@@ -5,11 +5,11 @@ import sys
 from PySide.QtCore import *
 from PySide.QtGui import QApplication
 
-from GitPysideFrame import GitPysideFrame
+from GitGrownFrame import GitGrownFrame
  
 # Create Qt application and the QDeclarative view
 app = QApplication(sys.argv)
-view = GitPysideFrame()
+view = GitGrownFrame()
 view.resize(1000, 800)
 
 

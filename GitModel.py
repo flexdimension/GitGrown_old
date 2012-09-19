@@ -4,11 +4,13 @@ Created on 2011/12/04
 @author: unseon_pro
 '''
 
-from git import *
+from git import Git, Repo
 from PyListModel import PyListModel
 from DictListModel import DictListModel
 from GraphDecorator import GraphDecorator
 from PySide.QtCore import QObject, Slot, Signal
+
+from subprocess import Popen
 
 import time
 
@@ -27,25 +29,119 @@ class GitModel(QObject) :
         
         self.git = Git(path)
         self.git.init()
-       
-    @Slot()
-    def getStatus(self):
-        print "getStatus is called"
-        return self.git.status()
-    
-    @Slot()
-    def refreshStatus(self):
-        print "Slot refreshStatus called"
-        self.status = self.git.status()
-        self.statusRefreshed.emit(self.status)
-    
-    def executeCommit(self, msg):
-        index = self.repo.index
-        if msg is None or len(msg) == 0:
-            return None
-        new_commit = index.commit(msg)
-        return new_commit
         
+    def run(self, cmd):
+        print "run " + str(cmd)
+        process = Popen(cmd)
+        process.wait()
+        print "returncode is " + str(process.returncode)
+        return process.returncode
+       
+    def refreshStatus(self):
+        self.status = self.git.status()    
+        self.indexModel = self.getIndexModel()
+        
+        self.statusRefreshed.emit(self.status)
+        
+    def stageFile(self, path):
+        return self.run(['git', 'add', path])
+        
+    def unstageFile(self, path):
+        return self.run(['git', 'reset', 'HEAD', path])
+
+    def executeCommit(self, msg):
+        if msg is None or len(msg) == 0:
+            print 'Message is empty'
+            return -1
+
+        rslt = self.run(['git', 'commit', '-m', msg])
+
+        return rslt
+    
+    def undoRecentCommit(self):
+        rslt = self.run(['git', 'reset', '--soft', 'HEAD^'])        
+        return rslt
+
+    def getIndexStatus(self):
+        fileIndex = dict()
+        
+        MODIFIED = '#\tmodified:   '
+        RENAMED = '#\trenamed:    '
+        NEW_FILE = '#\tnew file:   '
+        COMMITTED = '# Changes to be committed:'
+        #CHANGED = '# Changed but not updated:'
+        CHANGED = '# Changes not staged for commit:'
+        UNTRACKED = '# Untracked files:'
+        UNTRACKED_INTENT = '#    '
+        
+
+        self.isIdxClear = True
+        lines = self.status.splitlines()
+        type = ''
+        for l in lines:
+            print l
+            
+            #index
+            if l == COMMITTED :
+                type = 'I'
+                self.isIdxClear = False
+                
+            #working directory
+            elif l == CHANGED :
+                type = 'W'
+
+            if l.startswith(MODIFIED) :
+                path = l[len(MODIFIED):]
+                
+                if type == 'I':
+                    fileIndex[path] = 'M'
+                elif type == 'W':
+                    if path in fileIndex.keys():
+                        fileIndex[path] += 'C'
+                    else:
+                        fileIndex[path] = 'C'
+                continue
+            
+            if l.startswith(RENAMED) :
+                path = l[len(RENAMED):].split(' ')[2]               
+                fileIndex[path] = 'R'
+            
+            if l.startswith(NEW_FILE) :
+                path = l[len(NEW_FILE):]                
+                fileIndex[path] = 'N'                
+                
+            if l == UNTRACKED :
+                type = 'U'
+            
+                idx = lines.index(l) + 3
+                
+                for ul in lines[idx:] :
+                    if ul.startswith('#'):
+                        path = ul.split('\t')[1]
+                        #fileList.append({'type': type, 'path': path})
+                        fileIndex[path] = 'U'
+                break
+
+        fileList = [] 
+        
+        #untracked or new files are appended later
+        for path in fileIndex.keys() :
+            if fileIndex[path] != 'U' and fileIndex[path] != 'N':
+                fileList.append({'type': fileIndex[path], 'path': path})
+        for path in fileIndex.keys() :
+            if fileIndex[path] == 'U' or fileIndex[path] == 'N':
+                fileList.append({'type': fileIndex[path], 'path': path})
+        
+        print "index"       
+        for i in fileList: print i
+            
+        return fileList
+    
+    def isIndexClear(self):
+        return self.isIdxClear        
+    
+    def getIndexModel(self):
+        return DictListModel(self.getIndexStatus())
         
     def getConfigs(self):
         rslt = dict()
@@ -98,8 +194,8 @@ class GitModel(QObject) :
         
         return rslt
     
-    def getCommitInfo(self, hexsha):
-        return None
+    def getCommitInfo(self, hexsha = ''):
+        return self.convertToDict(self.repo.commit())
     
     def getFileListModel(self):
         return DictListModel(self.getFileList())
@@ -199,7 +295,7 @@ class GitModel(QObject) :
         headCommits = map(lambda x: self.repo.commit(x), branches)
 
         #Get traversedList and convert it to commitInfos
-        traversedList = self.getBranchGraphs3()
+        traversedList = self.getBranchGraphs3(branches)
         commitInfos = map(lambda x:self.convertToDict(x), traversedList)
 
         self.traversedList = []
@@ -246,26 +342,44 @@ class GitModel(QObject) :
                     commit = p0
                     continue
                 
-        for i in currentFlow:
-            print "getCommitFlow", i.hexsha
+        #for i in currentFlow:
+            #print "getCommitFlow", i.hexsha
                 
-        return currentFlow                
+        return currentFlow
+    
+    
+    def updateBranchList(self):
+        pass
 
+    def getBranchListModel(self):
+        dictlist = []
+        branches = self.repo.heads
+        
+        for i in branches:
+            dictlist.append({'name':i.name, 'offset' : 0})
+
+            
+        return DictListModel(dictlist)
+        
 
     
-    def getBranchGraphs3(self):
-        heads = self.repo.heads
-        masterCommit = heads.master.commit
+    def getBranchGraphs3(self, branches):
+        #heads = self.repo.heads
+        #masterCommit = heads.master.commit
         
         self.traversedList = []
         
-        self.traverseCommit(masterCommit)
+        for b in branches:
+            headCommit = self.repo.commit(b)
+            self.traverseCommit(headCommit)
 
         #self.traversedList.reverse()
                 
         return self.traversedList
        
     def traverseCommit(self, commit):
+        if commit in self.traversedList:
+            return
         
         currentFlow = []
 
@@ -295,7 +409,11 @@ class GitModel(QObject) :
             
 if __name__ == '__main__' :
     gm = GitModel()
-    gm.connect("/Users/unseon_pro/myworks/FlowsSample")
-    bg = gm.getBranchGraphs3()
-    for i in bg :
-        print "traversed", i.hexsha
+    #gm.connect("/Users/unseon_pro/myworks/FlowsSample")
+    #bg = gm.getBranchGraphs3()
+    #for i in bg :
+    #    print "traversed", i.hexsha
+    
+    #gm.connect('.')
+    #rslt = gm.getIndexStatus()
+    #for i in rslt: print i
